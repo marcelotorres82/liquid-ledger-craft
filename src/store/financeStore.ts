@@ -1,58 +1,141 @@
 import { create } from "zustand";
+import { defaultFinanceData } from "@/data/defaultData";
+import { FinancePayload, SavingsGoal, Transaction } from "@/types/finance";
 
-export interface Transaction {
-  id: number;
-  title: string;
-  category: string;
-  amount: number;
-  date: string;
-  icon: string;
-}
-
-interface FinanceStore {
-  incomeEntries: Transaction[];
-  expenseEntries: Transaction[];
+interface FinanceStore extends FinancePayload {
   nextId: number;
-  addIncome: (t: Omit<Transaction, "id">) => void;
-  updateIncome: (id: number, t: Partial<Transaction>) => void;
-  deleteIncome: (id: number) => void;
-  addExpense: (t: Omit<Transaction, "id">) => void;
-  updateExpense: (id: number, t: Partial<Transaction>) => void;
-  deleteExpense: (id: number) => void;
+  loading: boolean;
+  error: string | null;
+  initialize: () => Promise<void>;
+  addIncome: (t: Omit<Transaction, "id">) => Promise<void>;
+  updateIncome: (id: number, t: Partial<Transaction>) => Promise<void>;
+  deleteIncome: (id: number) => Promise<void>;
+  addExpense: (t: Omit<Transaction, "id">) => Promise<void>;
+  updateExpense: (id: number, t: Partial<Transaction>) => Promise<void>;
+  deleteExpense: (id: number) => Promise<void>;
+  addSavingsGoal: (goal: Omit<SavingsGoal, "id">) => Promise<void>;
 }
 
-const defaultIncome: Transaction[] = [
-  { id: 1, title: "Salário", category: "Trabalho", amount: 6500, date: "05/02/2026", icon: "💼" },
-  { id: 2, title: "Freelance Design", category: "Freelance", amount: 1200, date: "10/02/2026", icon: "🎨" },
-  { id: 3, title: "Dividendos", category: "Investimentos", amount: 450, date: "15/02/2026", icon: "📈" },
-  { id: 4, title: "Cashback", category: "Outros", amount: 300, date: "12/02/2026", icon: "💳" },
-];
+const maxDefaultId = Math.max(
+  ...defaultFinanceData.incomeEntries.map((i) => i.id),
+  ...defaultFinanceData.expenseEntries.map((e) => e.id),
+  ...defaultFinanceData.savingsGoals.map((g) => g.id),
+);
 
-const defaultExpenses: Transaction[] = [
-  { id: 101, title: "Aluguel", category: "Moradia", amount: 1800, date: "01/02/2026", icon: "🏠" },
-  { id: 102, title: "Supermercado", category: "Alimentação", amount: 980.50, date: "08/02/2026", icon: "🛒" },
-  { id: 103, title: "Streaming", category: "Entretenimento", amount: 89.90, date: "05/02/2026", icon: "📺" },
-  { id: 104, title: "Uber/99", category: "Transporte", amount: 340, date: "14/02/2026", icon: "🚗" },
-  { id: 105, title: "Academia", category: "Saúde", amount: 120, date: "01/02/2026", icon: "💪" },
-  { id: 106, title: "Farmácia", category: "Saúde", amount: 210.10, date: "11/02/2026", icon: "💊" },
-  { id: 107, title: "Internet", category: "Contas", amount: 130, date: "10/02/2026", icon: "📡" },
-  { id: 108, title: "Restaurante", category: "Alimentação", amount: 560, date: "13/02/2026", icon: "🍽️" },
-];
+const request = async (url: string, init?: RequestInit) => {
+  const response = await fetch(url, {
+    headers: { "Content-Type": "application/json" },
+    ...init,
+  });
 
-export const useFinanceStore = create<FinanceStore>((set) => ({
-  incomeEntries: defaultIncome,
-  expenseEntries: defaultExpenses,
-  nextId: 200,
-  addIncome: (t) =>
-    set((s) => ({ incomeEntries: [...s.incomeEntries, { ...t, id: s.nextId }], nextId: s.nextId + 1 })),
-  updateIncome: (id, t) =>
-    set((s) => ({ incomeEntries: s.incomeEntries.map((e) => (e.id === id ? { ...e, ...t } : e)) })),
-  deleteIncome: (id) =>
-    set((s) => ({ incomeEntries: s.incomeEntries.filter((e) => e.id !== id) })),
-  addExpense: (t) =>
-    set((s) => ({ expenseEntries: [...s.expenseEntries, { ...t, id: s.nextId }], nextId: s.nextId + 1 })),
-  updateExpense: (id, t) =>
-    set((s) => ({ expenseEntries: s.expenseEntries.map((e) => (e.id === id ? { ...e, ...t } : e)) })),
-  deleteExpense: (id) =>
-    set((s) => ({ expenseEntries: s.expenseEntries.filter((e) => e.id !== id) })),
+  if (!response.ok) {
+    throw new Error(`Erro na API: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+export const useFinanceStore = create<FinanceStore>((set, get) => ({
+  ...defaultFinanceData,
+  nextId: maxDefaultId + 1,
+  loading: false,
+  error: null,
+
+  initialize: async () => {
+    set({ loading: true, error: null });
+    try {
+      const data = await request("/api/finance");
+      set({
+        incomeEntries: data.incomeEntries,
+        expenseEntries: data.expenseEntries,
+        savingsGoals: data.savingsGoals,
+        nextId: data.nextId,
+      });
+    } catch {
+      set({ error: "API indisponível no momento. Usando modo local." });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  addIncome: async (t) => {
+    const localId = get().nextId;
+    const localRecord = { ...t, id: localId };
+    set((s) => ({ incomeEntries: [...s.incomeEntries, localRecord], nextId: s.nextId + 1 }));
+
+    try {
+      const data = await request("/api/finance", { method: "POST", body: JSON.stringify({ type: "income", transaction: t }) });
+      set({ incomeEntries: data.incomeEntries, nextId: data.nextId });
+    } catch {
+      set({ error: "Não foi possível sincronizar receita com o backend." });
+    }
+  },
+
+  updateIncome: async (id, t) => {
+    set((s) => ({ incomeEntries: s.incomeEntries.map((e) => (e.id === id ? { ...e, ...t } : e)) }));
+    try {
+      const data = await request("/api/finance", { method: "PATCH", body: JSON.stringify({ type: "income", id, transaction: t }) });
+      set({ incomeEntries: data.incomeEntries });
+    } catch {
+      set({ error: "Não foi possível atualizar receita no backend." });
+    }
+  },
+
+  deleteIncome: async (id) => {
+    set((s) => ({ incomeEntries: s.incomeEntries.filter((e) => e.id !== id) }));
+    try {
+      const data = await request(`/api/finance?type=income&id=${id}`, { method: "DELETE" });
+      set({ incomeEntries: data.incomeEntries });
+    } catch {
+      set({ error: "Não foi possível remover receita no backend." });
+    }
+  },
+
+  addExpense: async (t) => {
+    const localId = get().nextId;
+    const localRecord = { ...t, id: localId };
+    set((s) => ({ expenseEntries: [...s.expenseEntries, localRecord], nextId: s.nextId + 1 }));
+
+    try {
+      const data = await request("/api/finance", { method: "POST", body: JSON.stringify({ type: "expense", transaction: t }) });
+      set({ expenseEntries: data.expenseEntries, nextId: data.nextId });
+    } catch {
+      set({ error: "Não foi possível sincronizar despesa com o backend." });
+    }
+  },
+
+  updateExpense: async (id, t) => {
+    set((s) => ({ expenseEntries: s.expenseEntries.map((e) => (e.id === id ? { ...e, ...t } : e)) }));
+    try {
+      const data = await request("/api/finance", { method: "PATCH", body: JSON.stringify({ type: "expense", id, transaction: t }) });
+      set({ expenseEntries: data.expenseEntries });
+    } catch {
+      set({ error: "Não foi possível atualizar despesa no backend." });
+    }
+  },
+
+  deleteExpense: async (id) => {
+    set((s) => ({ expenseEntries: s.expenseEntries.filter((e) => e.id !== id) }));
+    try {
+      const data = await request(`/api/finance?type=expense&id=${id}`, { method: "DELETE" });
+      set({ expenseEntries: data.expenseEntries });
+    } catch {
+      set({ error: "Não foi possível remover despesa no backend." });
+    }
+  },
+
+  addSavingsGoal: async (goal) => {
+    const localId = get().nextId;
+    const localGoal = { ...goal, id: localId };
+    set((s) => ({ savingsGoals: [...s.savingsGoals, localGoal], nextId: s.nextId + 1 }));
+
+    try {
+      const data = await request("/api/finance", { method: "POST", body: JSON.stringify({ type: "goal", goal }) });
+      set({ savingsGoals: data.savingsGoals, nextId: data.nextId });
+    } catch {
+      set({ error: "Não foi possível sincronizar meta com o backend." });
+    }
+  },
 }));
+
+export type { Transaction, SavingsGoal };
