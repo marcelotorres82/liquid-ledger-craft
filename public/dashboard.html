@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a84ff">
+    <title>Dashboard - App Financeiro</title>
+    <script>window.location.replace('app/#/');</script>
+    <link rel="manifest" href="manifest.json">
+    <script src="assets/js/theme.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn-theme" type="button" data-theme-toggle>
+                        <span data-theme-label>Tema</span>
+                    </button>
+                    <button class="btn-logout" onclick="logout()">Sair</button>
+                </div>
+            </div>
+            
+            <div class="month-selector">
+                <button onclick="changeMonth(-1)" class="btn-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="15 18 9 12 15 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h2 id="currentMonth"></h2>
+                <button onclick="changeMonth(1)" class="btn-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="9 18 15 12 9 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+        
+        <main class="app-main">
+            <div class="summary-cards">
+                <div class="card receitas">
+                    <h3>Receitas</h3>
+                    <div class="card-value" id="totalReceitas">R$ 0,00</div>
+                    <div class="card-details">
+                        <span>Fixas: <strong id="receitasFixas">R$ 0,00</strong></span>
+                        <span>Variáveis: <strong id="receitasVariaveis">R$ 0,00</strong></span>
+                    </div>
+                </div>
+                
+                <div class="card despesas">
+                    <h3>Despesas</h3>
+                    <div class="card-value" id="totalDespesas">R$ 0,00</div>
+                    <div class="card-details">
+                        <span>Fixas: <strong id="despesasFixas">R$ 0,00</strong></span>
+                        <span>Avulsas: <strong id="despesasAvulsas">R$ 0,00</strong></span>
+                        <span>Parceladas: <strong id="despesasParceladas">R$ 0,00</strong></span>
+                    </div>
+                </div>
+                
+                <div class="card balanco" id="balancoCard">
+                    <h3>Balanço Mensal</h3>
+                    <div class="card-value" id="balanco">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="distribuicao-section" id="distribuicaoSection">
+                <div class="section-header">
+                    <h3>Distribuição Automática do Saldo</h3>
+                    <span class="distribuicao-total" id="saldoDistribuivel">R$ 0,00</span>
+                </div>
+                <div id="distribuicaoList"></div>
+            </div>
+
+            <div class="gastos-section" id="gastosSection">
+                <div class="section-header">
+                    <h3>Distribuição de Gastos</h3>
+                    <span class="distribuicao-total" id="gastosTotal">R$ 0,00</span>
+                </div>
+                <div class="chart-stack" id="gastosChartStack"></div>
+                <div class="chart-legend" id="gastosChartLegend"></div>
+            </div>
+
+            <div class="caixinhas-section" id="caixinhasSection">
+                <div class="section-header">
+                    <h3>Caixinhas Inteligentes</h3>
+                    <span class="distribuicao-total" id="caixinhasTotal">R$ 0,00</span>
+                </div>
+                <p class="caixinhas-subtitle" id="caixinhasPeriodo"></p>
+                <div class="chart-stack" id="caixinhasChartStack"></div>
+                <div class="chart-legend" id="caixinhasChartLegend"></div>
+                <div id="caixinhasList"></div>
+            </div>
+            
+            <div class="insights-section">
+                <div class="section-header">
+                    <h3>Insights de IA</h3>
+                    <button onclick="generateInsights()" class="btn-secondary" id="btnInsights">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="23 4 23 10 17 10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Atualizar
+                    </button>
+                </div>
+                <div class="insights-content" id="insightsContent">
+                    <p class="loading">Carregando insights...</p>
+                </div>
+            </div>
+            
+            <div class="parcelamentos-section" id="parcelamentosSection">
+                <h3>Parcelamentos Ativos</h3>
+                <div id="parcelamentosList"></div>
+            </div>
+        </main>
+        
+        <nav class="bottom-nav">
+            <a href="dashboard.html" class="nav-item nav-dashboard active">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="3" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="14" y="3" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="14" y="14" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="3" y="14" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="receitas.html" class="nav-item nav-receitas">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="12" y1="5" x2="12" y2="19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="5" y1="12" x2="19" y2="12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Receitas</span>
+            </a>
+            <a href="despesas.html" class="nav-item nav-despesas">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="5" y1="12" x2="19" y2="12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Despesas</span>
+            </a>
+        </nav>
+    </div>
+    
+    <script src="assets/js/dashboard.js"></script>
+</body>
+</html>

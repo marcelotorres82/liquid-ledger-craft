@@ -1,0 +1,22 @@
+.git
+.gitignore
+
+# Local secrets / environment files
+.env
+.env.*
+
+# Build and cache folders (local only)
+node_modules
+frontend/node_modules
+frontend/src
+frontend/dist
+frontend/package-lock.json
+.vercel
+
+# Local extraction / assets not needed in deploy
+.font-extract
+mobile-apk
+
+# OS/editor noise
+.DS_Store
+*.log

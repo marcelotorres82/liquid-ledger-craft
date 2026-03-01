@@ -1,0 +1,209 @@
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, LogOut, MoonStar, SunMedium } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { getMonthName, getShortMonthName } from '@/lib/format';
+import { useFinanceStore } from '@/store/financeStore';
+import { useUIStore } from '@/store/uiStore';
+import { setSheetOpenState } from '@/lib/sheetState';
+
+interface PageContainerProps {
+  children: React.ReactNode;
+  title?: string;
+  titleNode?: React.ReactNode;
+  subtitle?: string;
+  className?: string;
+  onLogout: () => void;
+  centerHeading?: boolean;
+}
+
+const PageContainer = ({
+  children,
+  title,
+  titleNode,
+  subtitle,
+  className,
+  onLogout,
+  centerHeading = false,
+}: PageContainerProps) => {
+  const currentMonth = useFinanceStore((state) => state.currentMonth);
+  const currentYear = useFinanceStore((state) => state.currentYear);
+  const setPeriod = useFinanceStore((state) => state.setPeriod);
+  const isLoadingData = useFinanceStore((state) => state.isLoadingData);
+  const theme = useUIStore((state) => state.theme);
+  const toggleTheme = useUIStore((state) => state.toggleTheme);
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false);
+  const [pickerYear, setPickerYear] = useState(currentYear);
+
+  useEffect(() => {
+    if (!monthPickerOpen) return;
+    setPickerYear(currentYear);
+  }, [monthPickerOpen, currentYear]);
+
+  useEffect(() => {
+    if (!monthPickerOpen) return;
+    setSheetOpenState(true);
+    return () => {
+      setSheetOpenState(false);
+    };
+  }, [monthPickerOpen]);
+
+  const handleSelectMonth = async (month: number) => {
+    await setPeriod(month, pickerYear);
+    setMonthPickerOpen(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className={cn('min-h-screen pb-32 px-4 pt-8 max-w-lg mx-auto', className)}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="mb-5"
+      >
+        <div
+          className={cn(
+            'mb-4 gap-3',
+            centerHeading
+              ? 'grid grid-cols-[94px_1fr_auto] items-center'
+              : 'flex items-start justify-between'
+          )}
+        >
+          {centerHeading && <div aria-hidden className="w-[94px] h-1" />}
+
+          <div className={cn(centerHeading && 'text-center')}>
+            {titleNode ?? (title ? <h1 className="text-large-title text-foreground">{title}</h1> : null)}
+            {subtitle && <p className="text-subhead text-muted-foreground mt-1">{subtitle}</p>}
+          </div>
+
+          <div className="flex items-center gap-2 justify-self-end">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="glass-subtle w-11 h-11 rounded-2xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors tap-highlight-none"
+              aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+            >
+              {theme === 'dark' ? <SunMedium className="w-5 h-5" /> : <MoonStar className="w-5 h-5" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={onLogout}
+              className="glass-subtle w-11 h-11 rounded-2xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors tap-highlight-none"
+              aria-label="Sair"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="glass rounded-3xl px-3 py-2 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setMonthPickerOpen(true)}
+            className="w-full rounded-2xl px-3 py-2.5 bg-secondary/55 border border-border/50 flex items-center justify-between gap-3 tap-highlight-none"
+            aria-label="Selecionar mês"
+          >
+            <div className="flex items-center gap-2.5">
+              <CalendarDays className="w-[18px] h-[18px] text-muted-foreground" />
+              <div className="text-left">
+                <p className="text-subhead font-semibold text-foreground leading-tight">
+                  {getMonthName(currentMonth)} {currentYear}
+                </p>
+                <p className="text-caption text-muted-foreground leading-tight">Selecionar período</p>
+              </div>
+            </div>
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+      </motion.div>
+
+      {children}
+
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {monthPickerOpen && (
+              <>
+                <motion.button
+                  type="button"
+                  aria-label="Fechar seletor de mês"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setMonthPickerOpen(false)}
+                  className="fixed inset-0 bg-foreground/18 backdrop-blur-sm z-50"
+                />
+
+                <motion.div
+                  initial={{ y: 24, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 20, opacity: 0 }}
+                  transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                  className="fixed inset-x-4 bottom-[calc(5.75rem+env(safe-area-inset-bottom,0px))] mx-auto max-w-lg z-[60]"
+                >
+                  <div className="glass rounded-3xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        type="button"
+                        onClick={() => setPickerYear((year) => year - 1)}
+                        className="w-9 h-9 rounded-xl bg-secondary/70 flex items-center justify-center text-muted-foreground tap-highlight-none"
+                        aria-label="Ano anterior"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+
+                      <p className="text-headline text-foreground">{pickerYear}</p>
+
+                      <button
+                        type="button"
+                        onClick={() => setPickerYear((year) => year + 1)}
+                        className="w-9 h-9 rounded-xl bg-secondary/70 flex items-center justify-center text-muted-foreground tap-highlight-none"
+                        aria-label="Próximo ano"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      {Array.from({ length: 12 }, (_, index) => {
+                        const month = index + 1;
+                        const active = month === currentMonth && pickerYear === currentYear;
+
+                        return (
+                          <button
+                            type="button"
+                            key={`month-${month}`}
+                            disabled={isLoadingData}
+                            onClick={() => handleSelectMonth(month)}
+                            className={cn(
+                              'rounded-2xl px-3 py-2.5 text-subhead tap-highlight-none transition-all',
+                              active
+                                ? 'bg-foreground text-background font-semibold'
+                                : 'bg-secondary/60 text-foreground hover:bg-secondary'
+                            )}
+                          >
+                            {getShortMonthName(month)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
+    </motion.div>
+  );
+};
+
+export default PageContainer;

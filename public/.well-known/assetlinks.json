@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.marcelo.appfinanceiro",
+      "sha256_cert_fingerprints": [
+        "78:94:AE:05:32:C8:09:46:44:10:AB:E8:E9:BA:AE:33:4E:E0:56:C9:5C:9F:71:8A:43:C6:DB:CE:C6:5E:1E:85"
+      ]
+    }
+  }
+]

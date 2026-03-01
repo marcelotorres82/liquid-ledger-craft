@@ -1,0 +1,35 @@
+{
+  "name": "app-financeiro-v2",
+  "version": "1.0.0",
+  "description": "App de controle financeiro com IA",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run ui:build && npm run dev:vercel",
+    "dev:vercel": "vercel dev",
+    "ui:install": "npm install --prefix frontend",
+    "ui:build": "npm run build --prefix frontend && mkdir -p public/app && find public/app -mindepth 1 -delete && cp -R frontend/dist/. public/app/",
+    "deploy": "vercel --prod",
+    "vercel-build": "npm run prisma:generate",
+    "postinstall": "npm run prisma:generate",
+    "init-db": "node scripts/init-db.js",
+    "prisma:generate": "prisma generate --schema lib/prisma/schema.prisma",
+    "prisma:push": "prisma db push --schema lib/prisma/schema.prisma",
+    "prisma:studio": "prisma studio --schema lib/prisma/schema.prisma",
+    "prisma:seed": "node lib/prisma/seed.js"
+  },
+  "prisma": {
+    "schema": "lib/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@prisma/client": "^5.20.0",
+    "bcryptjs": "^2.4.3",
+    "cookie": "^0.6.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0",
+    "vercel": "^50.17.1"
+  }
+}

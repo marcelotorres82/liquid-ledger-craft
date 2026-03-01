@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a84ff">
+    <title>Receitas - App Financeiro</title>
+    <script>window.location.replace('app/#/income');</script>
+    <link rel="manifest" href="manifest.json">
+    <script src="assets/js/theme.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Receitas</h1>
+                <div class="header-actions">
+                    <button class="btn-theme" type="button" data-theme-toggle>
+                        <span data-theme-label>Tema</span>
+                    </button>
+                    <button class="btn-logout" onclick="logout()">Sair</button>
+                </div>
+            </div>
+            
+            <div class="month-selector">
+                <button onclick="changeMonth(-1)" class="btn-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="15 18 9 12 15 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h2 id="currentMonth"></h2>
+                <button onclick="changeMonth(1)" class="btn-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="9 18 15 12 9 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+        
+        <main class="app-main">
+            <div class="summary-cards">
+                <div class="card receitas">
+                    <h3>Total de Receitas</h3>
+                    <div class="card-value" id="totalReceitas">R$ 0,00</div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Adicionar Nova Receita</h3>
+                <form id="receitaForm">
+                    <div class="form-group">
+                        <label for="descricao">Descrição</label>
+                        <input type="text" id="descricao" required placeholder="Ex: Salário, Freelance, Bônus">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="valor">Valor (R$)</label>
+                            <input type="number" id="valor" step="0.01" required placeholder="0,00">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tipo">Tipo</label>
+                            <select id="tipo" required>
+                                <option value="fixa">Fixa (todo mês)</option>
+                                <option value="variavel">Variável (uma vez)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="data">Data</label>
+                        <input type="date" id="data" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="12" y1="5" x2="12" y2="19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="5" y1="12" x2="19" y2="12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Adicionar Receita
+                    </button>
+                </form>
+            </div>
+            
+            <div class="list-section">
+                <h3>Receitas Fixas</h3>
+                <div id="receitasFixasList" class="items-list"></div>
+            </div>
+            
+            <div class="list-section">
+                <h3>Receitas Variáveis (Mês Atual)</h3>
+                <div id="receitasVariaveisList" class="items-list"></div>
+            </div>
+        </main>
+        
+        <nav class="bottom-nav">
+            <a href="dashboard.html" class="nav-item nav-dashboard">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="3" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="14" y="3" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="14" y="14" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="3" y="14" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="receitas.html" class="nav-item nav-receitas active">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="12" y1="5" x2="12" y2="19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="5" y1="12" x2="19" y2="12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Receitas</span>
+            </a>
+            <a href="despesas.html" class="nav-item nav-despesas">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="5" y1="12" x2="19" y2="12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Despesas</span>
+            </a>
+        </nav>
+    </div>
+    
+    <script src="assets/js/receitas.js"></script>
+</body>
+</html>

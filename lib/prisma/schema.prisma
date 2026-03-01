@@ -1,0 +1,103 @@
+// Prisma Schema para App Financeiro
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("PRISMA_DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+// ===================================
+// MODELOS
+// ===================================
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(100)
+  senha     String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relações
+  receitas  Receita[]
+  despesas  Despesa[]
+  insights  Insight[]
+
+  @@map("usuarios")
+}
+
+model Receita {
+  id            Int      @id @default(autoincrement())
+  descricao     String   @db.VarChar(255)
+  valor         Decimal  @db.Decimal(10, 2)
+  tipo          TipoReceita
+  dataRegistro  DateTime @map("data_registro") @db.Date
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relação com usuário
+  usuarioId     Int      @map("usuario_id")
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, tipo])
+  @@index([dataRegistro])
+  @@map("receitas")
+}
+
+model Despesa {
+  id                  Int      @id @default(autoincrement())
+  descricao           String   @db.VarChar(255)
+  valorParcela        Decimal  @map("valor_parcela") @db.Decimal(10, 2)
+  valorPrimeiraParcela Decimal? @map("valor_primeira_parcela") @db.Decimal(10, 2)
+  tipo                TipoDespesa
+  dataInicio          DateTime @map("data_inicio") @db.Date
+  paga                Boolean  @default(false)
+  dataPagamento       DateTime? @map("data_pagamento") @db.Date
+  parcelasTotal       Int      @default(1) @map("parcelas_total")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relação com usuário
+  usuarioId           Int      @map("usuario_id")
+  usuario             Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, tipo])
+  @@index([dataInicio])
+  @@map("despesas")
+}
+
+model Insight {
+  id        Int      @id @default(autoincrement())
+  mes       Int
+  ano       Int
+  conteudo  String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relação com usuário
+  usuarioId Int      @map("usuario_id")
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, mes, ano])
+  @@index([usuarioId, mes, ano])
+  @@map("insights")
+}
+
+// ===================================
+// ENUMS
+// ===================================
+
+enum TipoReceita {
+  fixa
+  variavel
+}
+
+enum TipoDespesa {
+  fixa
+  parcelada
+  avulsa
+}

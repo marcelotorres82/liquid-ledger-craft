@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Environment & Secrets
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Vercel
+.vercel/
+
+# Build outputs
+frontend/dist/
+public/app/
+
+# Mobile APK build artifacts
+mobile-apk/twa/.gradle/
+mobile-apk/twa/app-financeiro-twa/.gradle/
+mobile-apk/twa/build/
+mobile-apk/twa/app/build/
+mobile-apk/twa/app-financeiro-twa/build/
+mobile-apk/twa/app-financeiro-twa/app/build/
+mobile-apk/twa/*.apk
+mobile-apk/twa/*.aab
+mobile-apk/twa/*.idsig
+mobile-apk/twa/app-financeiro-twa/*.apk
+mobile-apk/twa/app-financeiro-twa/*.aab
+mobile-apk/twa/app-financeiro-twa/*.idsig
+
+# Keystore (signing keys)
+*.keystore
+*.jks
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Prisma
+lib/prisma/migrations/
+
+# Font files (proprietary)
+.font-extract/
+public/downloads/*.apk
