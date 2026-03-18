@@ -422,7 +422,7 @@ const ExpenseSheet = ({ open, onClose, onSave, initialDate, referenceMonth, edit
                       }}
                       className={cn(
                         'payment-switch tap-highlight-none',
-                        paga ? 'payment-switch-on' : 'payment-switch-off'
+                        paga ? 'payment-switch-off' : 'payment-switch-on'
                       )}
                       aria-label={paga ? 'Marcar como não paga' : 'Marcar como paga'}
                     >

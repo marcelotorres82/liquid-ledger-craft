@@ -12,12 +12,7 @@ interface TransactionItemProps {
   delay?: number;
   onEdit?: () => void;
   onDelete?: () => void;
-  onAmountClick?: () => void;
   isStriked?: boolean;
-  isChecked?: boolean;
-  onToggleCheck?: () => void;
-  checkLabel?: string;
-  isCheckDisabled?: boolean;
 }
 
 const TransactionItem = ({
@@ -29,44 +24,12 @@ const TransactionItem = ({
   delay = 0,
   onEdit,
   onDelete,
-  onAmountClick,
   isStriked = false,
-  isChecked = false,
-  onToggleCheck,
-  checkLabel = "Marcar",
-  isCheckDisabled = false,
 }: TransactionItemProps) => {
   const [showActions, setShowActions] = useState(false);
   const hasActions = Boolean(onEdit || onDelete);
+  
   const amountText = `${type === "income" ? "+" : "-"} R$ ${Math.abs(amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-
-  const amountNode = onAmountClick ? (
-    <button
-      type="button"
-      onClick={(event) => {
-        event.stopPropagation();
-        onAmountClick();
-      }}
-      className={cn(
-        "expense-value-button shrink-0 tap-highlight-none inline-flex items-center justify-end w-auto whitespace-nowrap text-right font-black",
-        isStriked && "line-through opacity-70",
-        type === "income" ? "text-income drop-shadow-[0_2px_8px_rgba(16,185,129,0.3)]" : "text-expense drop-shadow-[0_2px_8px_rgba(239,68,68,0.3)]"
-      )}
-      aria-label={`Editar ${title}`}
-    >
-      {amountText}
-    </button>
-  ) : (
-    <span
-      className={cn(
-        "text-subhead font-black shrink-0 w-auto whitespace-nowrap text-right",
-        isStriked && "line-through opacity-70",
-        type === "income" ? "text-income drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]" : "text-expense drop-shadow-[0_0_8px_rgba(239,68,68,0.3)]"
-      )}
-    >
-      {amountText}
-    </span>
-  );
 
   return (
     <motion.div
@@ -78,14 +41,15 @@ const TransactionItem = ({
       className={cn("flex items-center gap-3 py-3", hasActions && "cursor-pointer")}
       onClick={hasActions ? () => setShowActions((v) => !v) : undefined}
     >
-      <div className="w-11 h-11 rounded-2xl liquid-glass-sm border border-white/5 flex items-center justify-center text-muted-foreground/80 shrink-0 shadow-sm">
-        <div className="scale-110 drop-shadow-md">{icon}</div>
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary shrink-0">
+        {icon}
       </div>
+      
       <div className="flex-1 min-w-0">
-        <p className={cn("text-subhead font-bold text-foreground truncate tracking-tight", isStriked && "line-through opacity-70")}>
+        <p className={cn("text-sm font-medium text-foreground truncate", isStriked && "line-through opacity-60")}>
           {title}
         </p>
-        <p className={cn("text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest", isStriked && "line-through opacity-65")}>
+        <p className={cn("text-xs text-muted-foreground", isStriked && "line-through opacity-50")}>
           {subtitle}
         </p>
       </div>
@@ -125,31 +89,27 @@ const TransactionItem = ({
                 )}
               </motion.div>
             ) : (
-              amountNode
+              <span
+                className={cn(
+                  "text-sm font-semibold tabular whitespace-nowrap",
+                  isStriked && "line-through opacity-60",
+                  type === "income" ? "text-success" : "text-foreground"
+                )}
+              >
+                {amountText}
+              </span>
             )}
           </AnimatePresence>
         ) : (
-          amountNode
-        )}
-
-        {onToggleCheck && (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onToggleCheck();
-            }}
-            disabled={isCheckDisabled}
+          <span
             className={cn(
-              "payment-switch tap-highlight-none active:scale-95",
-              isChecked ? "payment-switch-on" : "payment-switch-off",
-              isCheckDisabled && "opacity-65 cursor-not-allowed"
+              "text-sm font-semibold tabular whitespace-nowrap",
+              isStriked && "line-through opacity-60",
+              type === "income" ? "text-success" : "text-foreground"
             )}
-            aria-label={checkLabel}
-            title={checkLabel}
           >
-            <span className="payment-switch-knob" />
-          </button>
+            {amountText}
+          </span>
         )}
       </div>
     </motion.div>

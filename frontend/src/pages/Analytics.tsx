@@ -323,9 +323,9 @@ const Analytics = ({ onLogout }: AnalyticsProps) => {
             </div>
 
             <div className="text-right ml-auto shrink-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-1">Total {currentYear}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-1">Total do mês</p>
               <p className="text-title-2 font-black text-expense whitespace-nowrap drop-shadow-[0_4px_12px_rgba(239,68,68,0.25)]">
-                {formatCurrency(categoryAnnualTotal)}
+                {formatCurrency(categoryCurrentMonthTotal)}
               </p>
             </div>
           </div>
@@ -350,9 +350,9 @@ const Analytics = ({ onLogout }: AnalyticsProps) => {
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/5 border border-white/5 p-3.5 backdrop-blur-md">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 opacity-60">Média ativa</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 opacity-60">Total no ano</p>
                   <p className="text-foreground font-black text-lg">
-                    {formatCurrency(averageActiveMonth)}
+                    {formatCurrency(categoryAnnualTotal)}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/5 border border-white/5 p-3.5 backdrop-blur-md col-span-2 sm:col-span-1">

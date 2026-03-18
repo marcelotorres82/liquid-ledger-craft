@@ -4,28 +4,28 @@
 
 @layer base {
   :root {
-    color-scheme: light;
-    /* Apple/Oppo-inspired neutral palette */
-    --background: 0 0% 98%;
-    --foreground: 220 20% 10%;
+    color-scheme: dark;
+    /* Sparkle-inspired dark palette */
+    --background: 0 0% 3%;
+    --foreground: 0 0% 100%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 211 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 3%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 20% 20%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 220 20% 10%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 3%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -34,7 +34,7 @@
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: 0 0% 3%;
 
     --income: 142 71% 45%;
     --income-foreground: 0 0% 100%;
@@ -45,88 +45,39 @@
     --savings: 211 100% 50%;
     --savings-foreground: 0 0% 100%;
 
-    --border: 220 16% 92%;
-    --input: 220 16% 92%;
-    --ring: 211 100% 50%;
+    --border: 0 0% 12%;
+    --input: 0 0% 12%;
+    --ring: 0 0% 100%;
 
-    --radius: 2.25rem; /* ~36px */
+    --radius: 1.5rem;
 
-    /* Glass tokens - Oppo 1.15mm look */
-    --glass-bg: 0 0% 100% / 0.6;
-    --glass-border: 0 0% 100% / 0.15;
-    --glass-subtle-bg: 0 0% 100% / 0.4;
-    --glass-shadow: 220 20% 10% / 0.04;
-    --glass-blur: 32px;
-    --glass-inner-highlight: 0 0% 100% / 0.8;
-    --glass-refraction: 210 100% 72% / 0.1;
+    /* Sparkle Glass tokens */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-bg-hover: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(255, 255, 255, 0.15);
+    --glass-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 8px 16px -4px rgba(0, 0, 0, 0.5);
+    --glass-shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 20px 40px -12px rgba(0, 0, 0, 0.7);
+    --transition-smooth: cubic-bezier(0.2, 0, 0, 1);
 
-    /* Gradients */
-    --gradient-income: linear-gradient(135deg, #22C55E, #10B981);
-    --gradient-expense: linear-gradient(135deg, #EF4444, #F43F5E);
-    --gradient-savings: linear-gradient(135deg, #3B82F6, #6366F1);
-    --gradient-accent: linear-gradient(135deg, #A855F7, #3B82F6);
-    --gradient-surface: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
-
-    /* Typography */
-    --font-sans: 'Inter', 'SF Pro Text', -apple-system, sans-serif;
-    --font-display: 'Outfit', 'SF Pro Display', sans-serif;
-
-    /* Sidebar */
-    --sidebar-background: 0 0% 99%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 94%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    color-scheme: dark;
-    --background: 0 0% 0%; /* Absolute black */
-    --foreground: 0 0% 100%;
-
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 0 0% 4%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 211 100% 55%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 0 0% 90%;
-
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 60%;
-
-    --accent: 0 0% 8%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 62.8% 40%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 0 0% 10%;
-    --input: 0 0% 10%;
-    --ring: 211 100% 55%;
-
-    --glass-bg: 0 0% 0% / 0.45;
-    --glass-border: 255 255 255 / 0.05;
-    --glass-subtle-bg: 0 0% 5% / 0.3;
-    --glass-shadow: 0 0% 0% / 0.8;
+    /* Legacy tokens for compatibility */
+    --glass-blur: 20px;
     --glass-inner-highlight: 255 255 255 / 0.03;
     --glass-refraction: 202 100% 74% / 0.05;
 
-    --sidebar-background: 0 0% 2%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 6%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 0 0% 8%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Typography */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 3%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 0 0% 100%;
   }
 }
 
@@ -138,37 +89,56 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
-    /* Dynamic rich gradient for iOS 26 style */
-    background: 
-      radial-gradient(ellipse at 20% 50%, rgba(120,119,198,0.3) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, rgba(74,222,128,0.2) 0%, transparent 45%),
-      radial-gradient(ellipse at 50% 80%, rgba(251,146,60,0.15) 0%, transparent 50%),
-      hsl(var(--background));
-    background-attachment: fixed;
-  }
-
-  h1,
-  h2,
-  h3,
-  .text-large-title,
-  .text-title-1,
-  .text-title-2,
-  .text-title-3 {
-    font-family: var(--font-display);
-  }
-
-  .dark body {
-    background: 
-      radial-gradient(ellipse at 20% 50%, rgba(120,119,198,0.35) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, rgba(74,222,128,0.25) 0%, transparent 45%),
-      radial-gradient(ellipse at 50% 80%, rgba(251,146,60,0.20) 0%, transparent 50%),
-      hsl(var(--background));
-    background-attachment: fixed;
+    background: hsl(var(--background));
   }
 }
 
 @layer components {
-  /* === LIQUID GLASS — Oppo Find Style === */
+  /* === SPARKLE GLASS CARD === */
+  .glass-card {
+    background: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius);
+    transition: all 0.6s var(--transition-smooth);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-card:hover {
+    background: var(--glass-bg-hover);
+    box-shadow: var(--glass-shadow-hover);
+  }
+
+  .glass-card-static {
+    background: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-border);
+  }
+
+  /* Text gradients from sparkle */
+  .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(45, 100%, 50%), hsl(35, 100%, 65%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-green {
+    background: linear-gradient(135deg, hsl(142, 71%, 45%), hsl(160, 60%, 55%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Legacy components - preserved for compatibility */
   .liquid-glass {
     position: relative;
     isolation: isolate;
