@@ -7,7 +7,6 @@ import { getMonthName, getShortMonthName } from '@/lib/format';
 import { useFinanceStore } from '@/store/financeStore';
 import { useUIStore } from '@/store/uiStore';
 import { setSheetOpenState } from '@/lib/sheetState';
-import { LiquidGlass } from './LiquidGlass';
 
 interface PageContainerProps {
   children: React.ReactNode;
@@ -17,6 +16,7 @@ interface PageContainerProps {
   className?: string;
   onLogout: () => void;
   centerHeading?: boolean;
+  hideMonthPicker?: boolean;
 }
 
 const PageContainer = ({
@@ -27,6 +27,7 @@ const PageContainer = ({
   className,
   onLogout,
   centerHeading = false,
+  hideMonthPicker = false,
 }: PageContainerProps) => {
   const currentMonth = useFinanceStore((state) => state.currentMonth);
   const currentYear = useFinanceStore((state) => state.currentYear);
@@ -86,61 +87,63 @@ const PageContainer = ({
           </div>
 
           <div className="flex items-center gap-2 justify-self-end">
-            <LiquidGlass
-              variant="sm"
+            <button
+              type="button"
               onClick={toggleTheme}
-              className="w-11 h-11 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors tap-highlight-none"
               aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
             >
               {theme === 'dark' ? <SunMedium className="w-5 h-5" /> : <MoonStar className="w-5 h-5" />}
-            </LiquidGlass>
+            </button>
 
-            <LiquidGlass
-              variant="sm"
+            <button
+              type="button"
               onClick={onLogout}
-              className="w-11 h-11 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors tap-highlight-none"
               aria-label="Sair"
             >
               <LogOut className="w-5 h-5" />
-            </LiquidGlass>
+            </button>
           </div>
         </div>
 
-        <LiquidGlass variant="sm" className="p-1 flex items-center justify-between gap-1.5 oppo-card border-none bg-secondary/20">
-          <button
-            type="button"
-            onClick={() => changeMonth(-1)}
-            disabled={isLoadingData}
-            className="w-10 h-10 flex items-center justify-center rounded-2xl bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground tap-highlight-none transition-colors"
-            aria-label="Mês anterior"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+        {!hideMonthPicker && (
+          <div className="glass-card p-1 flex items-center justify-between gap-1.5">
+            <button
+              type="button"
+              onClick={() => changeMonth(-1)}
+              disabled={isLoadingData}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground tap-highlight-none transition-colors"
+              aria-label="Mês anterior"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setMonthPickerOpen(true)}
-            className="flex-1 rounded-2xl px-3 py-2 bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-0.5 tap-highlight-none hover:bg-white/10 transition-colors"
-            aria-label="Selecionar mês"
-          >
-            <div className="flex items-center gap-2">
-              <CalendarDays className="w-3.5 h-3.5 text-muted-foreground" />
-              <p className="text-caption font-bold text-foreground leading-tight tracking-wide">
-                {getMonthName(currentMonth).toUpperCase()} {currentYear}
-              </p>
-            </div>
-          </button>
+            <button
+              type="button"
+              onClick={() => setMonthPickerOpen(true)}
+              className="flex-1 rounded-xl px-3 py-2 bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-0.5 tap-highlight-none hover:bg-white/10 transition-colors"
+              aria-label="Selecionar mês"
+            >
+              <div className="flex items-center gap-2">
+                <CalendarDays className="w-3.5 h-3.5 text-muted-foreground" />
+                <p className="text-caption font-bold text-foreground leading-tight tracking-wide">
+                  {getMonthName(currentMonth).toUpperCase()} {currentYear}
+                </p>
+              </div>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => changeMonth(1)}
-            disabled={isLoadingData}
-            className="w-10 h-10 flex items-center justify-center rounded-2xl bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground tap-highlight-none transition-colors"
-            aria-label="Próximo mês"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </LiquidGlass>
+            <button
+              type="button"
+              onClick={() => changeMonth(1)}
+              disabled={isLoadingData}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground tap-highlight-none transition-colors"
+              aria-label="Próximo mês"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </motion.div>
 
       {children}
@@ -165,32 +168,32 @@ const PageContainer = ({
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: 20, opacity: 0 }}
                   transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-                  className="fixed inset-x-4 bottom-[calc(5.75rem+env(safe-area-inset-bottom,0px))] mx-auto max-w-lg z-[60]"
+                  className="fixed inset-0 flex items-center justify-center z-[60] p-4"
                 >
-                  <LiquidGlass className="p-4">
-                    <div className="flex items-center justify-between mb-3">
+                  <div className="glass-card w-full max-w-md p-6">
+                    <div className="flex items-center justify-between mb-6">
                       <button
                         type="button"
                         onClick={() => setPickerYear((year) => year - 1)}
-                        className="w-9 h-9 rounded-xl bg-secondary/70 flex items-center justify-center text-muted-foreground tap-highlight-none"
+                        className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-foreground hover:bg-white/10 tap-highlight-none"
                         aria-label="Ano anterior"
                       >
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className="w-6 h-6" />
                       </button>
 
-                      <p className="text-headline text-foreground">{pickerYear}</p>
+                      <p className="text-title-2 font-semibold text-foreground">{pickerYear}</p>
 
                       <button
                         type="button"
                         onClick={() => setPickerYear((year) => year + 1)}
-                        className="w-9 h-9 rounded-xl bg-secondary/70 flex items-center justify-center text-muted-foreground tap-highlight-none"
+                        className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-foreground hover:bg-white/10 tap-highlight-none"
                         aria-label="Próximo ano"
                       >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-6 h-6" />
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-3">
                       {Array.from({ length: 12 }, (_, index) => {
                         const month = index + 1;
                         const active = month === currentMonth && pickerYear === currentYear;
@@ -202,7 +205,7 @@ const PageContainer = ({
                             disabled={isLoadingData}
                             onClick={() => handleSelectMonth(month)}
                             className={cn(
-                              'rounded-2xl px-3 py-2.5 text-subhead tap-highlight-none transition-all',
+                              'rounded-2xl px-4 py-4 text-subhead font-medium tap-highlight-none transition-all',
                               active
                                 ? 'bg-foreground text-background font-semibold'
                                 : 'bg-secondary/60 text-foreground hover:bg-secondary'
@@ -213,7 +216,7 @@ const PageContainer = ({
                         );
                       })}
                     </div>
-                  </LiquidGlass>
+                  </div>
                 </motion.div>
               </>
             )}

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, ArrowDownRight, CreditCard, Utensils, Wifi, Smartphone, Home, Zap, ShoppingBag, Car } from 'lucide-react';
+import { Plus, ArrowDownRight, CreditCard, Utensils, Wifi, Smartphone, Home, Zap, ShoppingBag, Car, Check } from 'lucide-react';
 import { BottomNav } from '@/components/dashboard/BottomNav';
 import ExpenseSheet from '@/components/ExpenseSheet';
 import { getCategoryLabel, parseExpenseDescription } from '@/lib/expenseMeta';
@@ -42,6 +42,19 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<Despesa | null>(null);
+
+  // Handler para toggle de pagamento
+  const handleTogglePagamento = async (item: typeof allExpenses[0]) => {
+    const novaDataPagamento = item.paga ? null : new Date().toISOString().split('T')[0];
+    await editDespesa(item.id, {
+      descricao: item.descricao,
+      valor_parcela: item.valor_parcela,
+      tipo: item.tipo,
+      data_inicio: item.data_inicio,
+      paga: !item.paga,
+      data_pagamento: novaDataPagamento,
+    });
+  };
 
   const allExpenses = useMemo(() => {
     const fixas = despesasFixas.map(d => {
@@ -209,7 +222,18 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
                       </div>
                     </div>
                     <div className="text-right flex items-center gap-2">
-                      <p className="text-sm font-semibold tabular text-foreground">
+                      <button
+                        onClick={() => handleTogglePagamento(item)}
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                          item.paga 
+                            ? 'bg-success/20 text-success border border-success/30' 
+                            : 'bg-secondary text-muted-foreground border border-border hover:bg-secondary/80'
+                        }`}
+                        title={item.paga ? 'Pago' : 'Marcar como pago'}
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <p className={`text-sm font-semibold tabular ${item.paga ? 'text-success line-through opacity-60' : 'text-foreground'}`}>
                         - {formatCurrency(item.valor_exibicao)}
                       </p>
                       <button

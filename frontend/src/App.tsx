@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import FloatingTabBar from '@/components/FloatingTabBar';
 import Dashboard from '@/pages/Dashboard';
 import Income from '@/pages/Income';
@@ -69,7 +70,8 @@ const App = () => {
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="glass rounded-3xl px-6 py-5 text-center">
+        <div className="glass-card rounded-3xl px-8 py-8 text-center flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
           <p className="text-subhead text-muted-foreground">Carregando interface...</p>
         </div>
       </div>
@@ -92,8 +94,6 @@ const App = () => {
             </Routes>
           </AnimatePresence>
         </div>
-
-        <FloatingTabBar />
       </div>
     </HashRouter>
   );
