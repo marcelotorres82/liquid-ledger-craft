@@ -218,26 +218,26 @@ const Analytics = ({ onLogout }: AnalyticsProps) => {
   return (
     <PageContainer title="Análise" subtitle="Visão analítica das suas finanças" onLogout={onLogout}>
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <GlassCard delay={0.1} className="text-center p-3">
+        <GlassCard delay={0.1} className="text-center p-3 overflow-hidden">
           <TrendingUp className="w-5 h-5 text-income mx-auto mb-1" />
           <p className="text-caption text-muted-foreground font-medium">Receitas</p>
-          <p className="text-subhead font-bold text-foreground tabular-nums whitespace-nowrap break-normal">
+          <p className="text-subhead font-bold text-foreground tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
             {formatCurrency(receitas)}
           </p>
         </GlassCard>
 
-        <GlassCard delay={0.15} className="text-center p-3">
+        <GlassCard delay={0.15} className="text-center p-3 overflow-hidden">
           <TrendingDown className="w-5 h-5 text-expense mx-auto mb-1" />
           <p className="text-caption text-muted-foreground font-medium">Despesas</p>
-          <p className="text-subhead font-bold text-foreground tabular-nums whitespace-nowrap break-normal">
+          <p className="text-subhead font-bold text-foreground tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
             {formatCurrency(despesas)}
           </p>
         </GlassCard>
 
-        <GlassCard delay={0.2} className="text-center p-3">
+        <GlassCard delay={0.2} className="text-center p-3 overflow-hidden">
           <Target className="w-5 h-5 text-savings mx-auto mb-1" />
           <p className="text-caption text-muted-foreground font-medium">Poupança</p>
-          <p className="text-subhead font-bold text-savings">
+          <p className="text-subhead font-bold text-savings tabular-nums">
             <AnimatedNumber value={savingsRate} suffix="%" decimals={0} />
           </p>
         </GlassCard>
@@ -348,21 +348,21 @@ const Analytics = ({ onLogout }: AnalyticsProps) => {
           ) : (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md">
+                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md overflow-hidden">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 opacity-60">Mês atual</p>
-                  <p className="text-foreground font-black text-lg tabular-nums whitespace-nowrap break-normal">
+                  <p className="text-foreground font-black text-lg tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
                     {formatCurrency(categoryCurrentMonthTotal)}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md">
+                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md overflow-hidden">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 opacity-60">Total no ano</p>
-                  <p className="text-foreground font-black text-lg tabular-nums whitespace-nowrap break-normal">
+                  <p className="text-foreground font-black text-lg tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
                     {formatCurrency(categoryAnnualTotal)}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md col-span-2 sm:col-span-1">
+                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md col-span-2 sm:col-span-1 overflow-hidden">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 opacity-60">Pico ({peakMonth.label})</p>
-                  <p className="text-foreground font-black text-lg tabular-nums whitespace-nowrap break-normal">
+                  <p className="text-foreground font-black text-lg tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
                     {formatCurrency(peakMonth.value)}
                   </p>
                 </div>
@@ -420,15 +420,15 @@ const Analytics = ({ onLogout }: AnalyticsProps) => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...sparkleTransition, delay: 0.4 + index * 0.04 }}
-                className="flex items-center gap-4 liquid-glass-sm p-3 rounded-2xl border border-border/50"
+                className="flex items-center gap-3 liquid-glass-sm p-3 rounded-2xl border border-border/50"
               >
                 <div className="w-4 h-4 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: category.color }} />
-                <span className="text-subhead font-bold text-foreground flex-1">{category.label}</span>
-                <div className="text-right">
-                  <span className="text-subhead font-black text-foreground block tabular-nums whitespace-nowrap break-normal">
+                <span className="text-subhead font-bold text-foreground flex-1 min-w-0 truncate">{category.label}</span>
+                <div className="text-right shrink-0">
+                  <span className="text-subhead font-black text-foreground block tabular-nums whitespace-nowrap">
                     {formatCurrency(category.value)}
                   </span>
-                  <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-tighter">{category.pct}% do total</span>
+                  <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-tighter whitespace-nowrap">{category.pct}% do total</span>
                 </div>
               </motion.div>
             ))}

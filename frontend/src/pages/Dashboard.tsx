@@ -452,14 +452,14 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
                 <p className="text-subhead font-medium text-foreground truncate">{entry.title}</p>
                 <p
                   className={cn(
-                    'text-caption',
+                    'text-caption truncate',
                     entry.daysUntil < 0 ? 'text-expense' : entry.daysUntil <= 3 ? 'text-warning' : 'text-muted-foreground'
                   )}
                 >
                   {dueLabel(entry.daysUntil)} · {formatDate(entry.dueDateISO)}
                 </p>
               </div>
-              <p className="text-caption font-semibold text-expense whitespace-nowrap">{formatCurrency(entry.amount)}</p>
+              <p className="text-caption font-semibold text-expense tabular-nums whitespace-nowrap shrink-0">{formatCurrency(entry.amount)}</p>
             </div>
           ))}
         </div>
@@ -486,11 +486,11 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
 
         <div className="grid grid-cols-3 gap-2">
           {projectedBalances.map((projection) => (
-            <div key={`projection-${projection.days}`} className="rounded-xl bg-secondary/50 border border-border/60 p-2">
+            <div key={`projection-${projection.days}`} className="rounded-xl bg-secondary/50 border border-border/60 p-2 overflow-hidden">
               <p className="text-caption text-muted-foreground">{projection.days} dias</p>
               <p
                 className={cn(
-                  'font-semibold leading-tight break-words text-[clamp(0.8rem,3.4vw,0.95rem)]',
+                  'font-semibold leading-tight tabular-nums whitespace-nowrap overflow-hidden text-ellipsis text-[clamp(0.8rem,3.4vw,0.95rem)]',
                   projection.value >= 0 ? 'text-foreground' : 'text-expense'
                 )}
               >
