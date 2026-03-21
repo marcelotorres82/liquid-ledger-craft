@@ -348,21 +348,21 @@ const Analytics = ({ onLogout }: AnalyticsProps) => {
           ) : (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md overflow-hidden">
+                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 opacity-60">Mês atual</p>
-                  <p className="text-foreground font-black text-lg tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                  <p className="text-foreground font-medium text-xs sm:text-sm tabular-nums tracking-tighter whitespace-nowrap">
                     {formatCurrency(categoryCurrentMonthTotal)}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md overflow-hidden">
+                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 opacity-60">Total no ano</p>
-                  <p className="text-foreground font-black text-lg tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                  <p className="text-foreground font-medium text-xs sm:text-sm tabular-nums tracking-tighter whitespace-nowrap">
                     {formatCurrency(categoryAnnualTotal)}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md col-span-2 sm:col-span-1 overflow-hidden">
+                <div className="rounded-2xl bg-secondary/55 border border-border/50 p-3.5 backdrop-blur-md col-span-2 sm:col-span-1">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 opacity-60">Pico ({peakMonth.label})</p>
-                  <p className="text-foreground font-black text-lg tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                  <p className="text-foreground font-medium text-xs sm:text-sm tabular-nums tracking-tighter whitespace-nowrap">
                     {formatCurrency(peakMonth.value)}
                   </p>
                 </div>
