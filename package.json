@@ -9,7 +9,7 @@
     "ui:install": "npm install --prefix frontend",
     "ui:build": "npm run build --prefix frontend && mkdir -p public/app && find public/app -mindepth 1 -delete && cp -R frontend/dist/. public/app/",
     "deploy": "vercel --prod",
-    "vercel-build": "npm run ui:install && npx prisma generate --schema=lib/prisma/schema.prisma && npx prisma db push --schema=lib/prisma/schema.prisma --accept-data-loss && npm run ui:build",
+    "vercel-build": "npm run ui:install && npx prisma generate --schema=lib/prisma/schema.prisma && npm run ui:build",
     "postinstall": "npm run ui:install && npx prisma generate --schema=lib/prisma/schema.prisma || true",
     "prisma:studio": "npx prisma studio --schema lib/prisma/schema.prisma",
     "prisma:seed": "node lib/prisma/seed.js"
@@ -33,6 +33,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "dotenv-cli": "^11.0.0",
     "vercel": "^50.32.5"
   }
 }
