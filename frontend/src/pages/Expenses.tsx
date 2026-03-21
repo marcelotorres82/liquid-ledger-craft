@@ -205,47 +205,52 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ ...transition, delay: 0.25 + i * 0.04 }}
-                    className="flex items-center justify-between py-3 border-b border-border/50 last:border-0"
+                    className="flex items-center gap-3 py-3 border-b border-border/50 last:border-0"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-destructive/10">
-                        <Icon className="h-4 w-4 text-destructive" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{item.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {item.tipo_exibicao} · {formatDate(item.data_inicio)}
-                          {item.detalhe && ` · ${item.detalhe}`}
-                        </p>
-                      </div>
+                    {/* Icon */}
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
+                      <Icon className="h-4 w-4 text-destructive" />
                     </div>
-                    <div className="text-right flex items-center gap-2">
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {item.tipo_exibicao} · {formatDate(item.data_inicio)}
+                        {item.detalhe && ` · ${item.detalhe}`}
+                      </p>
+                    </div>
+                    
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => handleTogglePagamento(item)}
-                        className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
                           item.paga 
                             ? 'bg-success/20 text-success border border-success/30' 
                             : 'bg-secondary text-muted-foreground border border-border hover:bg-secondary/80'
                         }`}
                         title={item.paga ? 'Pago' : 'Marcar como pago'}
                       >
-                        <Check className="w-4 h-4" />
+                        <Check className="w-3.5 h-3.5" />
                       </button>
-                      <p className={`text-sm font-semibold tabular ${item.paga ? 'text-success line-through opacity-60' : 'text-foreground'}`}>
+                      
+                      <p className={`text-sm font-semibold tabular-nums whitespace-nowrap ${item.paga ? 'text-success line-through opacity-60' : 'text-destructive'}`}>
                         - {formatCurrency(item.valor_exibicao)}
                       </p>
+                      
                       <button
                         onClick={() => {
                           setEditing(item);
                           setSheetOpen(true);
                         }}
-                        className="text-xs text-muted-foreground hover:text-foreground"
+                        className="text-xs text-muted-foreground hover:text-foreground whitespace-nowrap"
                       >
                         Editar
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="text-xs text-destructive hover:text-destructive/80"
+                        className="text-xs text-destructive hover:text-destructive/80 whitespace-nowrap"
                       >
                         Excluir
                       </button>
@@ -273,9 +278,9 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
                     : 0;
                   return (
                     <div key={`parcela-${item.id}`} className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-medium">{parsed.description}</p>
-                        <p className="text-sm text-destructive font-semibold">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-medium truncate flex-1 min-w-0">{parsed.description}</p>
+                        <p className="text-sm text-destructive font-semibold tabular-nums whitespace-nowrap shrink-0">
                           {formatCurrency(Number(item.valor_parcela_mes ?? item.valor_parcela))}
                         </p>
                       </div>

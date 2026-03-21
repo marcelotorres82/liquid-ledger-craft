@@ -195,21 +195,24 @@ const Income = ({ onLogout }: IncomeProps) => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ ...transition, delay: 0.35 + i * 0.04 }}
-                    className="flex items-center justify-between py-3 border-b border-border/50 last:border-0"
+                    className="flex items-center gap-3 py-3 border-b border-border/50 last:border-0"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-success/10">
-                        <Icon className="h-4 w-4 text-success" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{item.descricao}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {item.tipo === 'fixa' ? 'Fixa' : 'Variável'} · {formatDate(item.data_registro)}
-                        </p>
-                      </div>
+                    {/* Icon */}
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-success/10">
+                      <Icon className="h-4 w-4 text-success" />
                     </div>
-                    <div className="text-right flex items-center gap-2">
-                      <p className="text-sm font-semibold tabular text-success">
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.descricao}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {item.tipo === 'fixa' ? 'Fixa' : 'Variável'} · {formatDate(item.data_registro)}
+                      </p>
+                    </div>
+                    
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <p className="text-sm font-semibold tabular-nums whitespace-nowrap text-success">
                         + {formatCurrency(item.valor)}
                       </p>
                       <button
@@ -217,13 +220,13 @@ const Income = ({ onLogout }: IncomeProps) => {
                           setEditing(item);
                           setSheetOpen(true);
                         }}
-                        className="text-xs text-muted-foreground hover:text-foreground"
+                        className="text-xs text-muted-foreground hover:text-foreground whitespace-nowrap"
                       >
                         Editar
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="text-xs text-destructive hover:text-destructive/80"
+                        className="text-xs text-destructive hover:text-destructive/80 whitespace-nowrap"
                       >
                         Excluir
                       </button>

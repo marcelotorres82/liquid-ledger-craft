@@ -101,22 +101,20 @@ export const TransactionsCard = () => {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ ...transition, delay: 0.45 + i * 0.04 }}
-            className="flex items-center justify-between py-3 border-b border-border/50 last:border-0"
+            className="flex items-center gap-3 py-3 border-b border-border/50 last:border-0"
           >
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary">
-                {t.income ? (
-                  <ArrowUpRight className="h-4 w-4 text-success" />
-                ) : (
-                  <ArrowDownRight className="h-4 w-4 text-destructive" />
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-medium">{t.name}</p>
-                <p className="text-xs text-muted-foreground">{t.desc}</p>
-              </div>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary">
+              {t.income ? (
+                <ArrowUpRight className="h-4 w-4 text-success" />
+              ) : (
+                <ArrowDownRight className="h-4 w-4 text-destructive" />
+              )}
             </div>
-            <p className={`text-sm font-semibold tabular ${t.income ? "text-success" : "text-foreground"}`}>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{t.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{t.desc}</p>
+            </div>
+            <p className={`text-sm font-semibold tabular-nums whitespace-nowrap shrink-0 ${t.income ? "text-success" : "text-foreground"}`}>
               {t.income ? "+ " : "- "}{formatCurrency(t.value)}
             </p>
           </motion.div>

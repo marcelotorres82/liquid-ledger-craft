@@ -50,12 +50,12 @@ const TransactionItem = ({
         <p className={cn("text-sm font-medium text-foreground truncate", isStriked && "line-through opacity-60")}>
           {title}
         </p>
-        <p className={cn("text-xs text-muted-foreground", isStriked && "line-through opacity-50")}>
+        <p className={cn("text-xs text-muted-foreground truncate", isStriked && "line-through opacity-50")}>
           {subtitle}
         </p>
       </div>
 
-      <div className="flex items-center justify-end gap-2 shrink-0 min-w-0">
+      <div className="flex items-center justify-end gap-2 shrink-0">
         {hasActions ? (
           <AnimatePresence>
             {showActions ? (
@@ -72,7 +72,7 @@ const TransactionItem = ({
                       e.stopPropagation();
                       onEdit();
                     }}
-                    className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center tap-highlight-none active:scale-90 transition-transform"
+                    className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center tap-highlight-none active:scale-90 transition-transform"
                   >
                     <Pencil className="w-3.5 h-3.5 text-primary" />
                   </button>
@@ -83,7 +83,7 @@ const TransactionItem = ({
                       e.stopPropagation();
                       onDelete();
                     }}
-                    className="w-8 h-8 rounded-xl bg-destructive/10 flex items-center justify-center tap-highlight-none active:scale-90 transition-transform"
+                    className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center tap-highlight-none active:scale-90 transition-transform"
                   >
                     <Trash2 className="w-3.5 h-3.5 text-destructive" />
                   </button>
@@ -92,7 +92,7 @@ const TransactionItem = ({
             ) : (
               <span
                 className={cn(
-                  "text-sm font-semibold tabular whitespace-nowrap",
+                  "text-sm font-semibold tabular-nums whitespace-nowrap",
                   isStriked && "line-through opacity-60",
                   type === "income" ? "text-success" : "text-foreground"
                 )}
@@ -104,7 +104,7 @@ const TransactionItem = ({
         ) : (
           <span
             className={cn(
-              "text-sm font-semibold tabular whitespace-nowrap",
+              "text-sm font-semibold tabular-nums whitespace-nowrap",
               isStriked && "line-through opacity-60",
               type === "income" ? "text-success" : "text-foreground"
             )}
