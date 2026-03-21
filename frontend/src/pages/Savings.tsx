@@ -22,6 +22,7 @@ const Savings = ({ onLogout }: SavingsProps) => {
   const dashboard = useFinanceStore((state) => state.dashboard);
   const totalSaved = Number(dashboard?.caixinhas?.total_acumulado || 0);
   const goals = dashboard?.caixinhas?.categorias || [];
+  const distribuicaoSaldo = dashboard?.distribuicao_saldo || [];
   const cycleStart = dashboard?.caixinhas?.inicio_ciclo;
 
   const periodLabel =
@@ -51,6 +52,7 @@ const Savings = ({ onLogout }: SavingsProps) => {
           const percentPlus = Number(goal.progresso_plus || 0);
           const hasMeta = Number(goal.meta || 0) > 0;
           const hasPlus = Number(goal.meta_plus || 0) > 0;
+          const suggestedDeposit = distribuicaoSaldo.find(d => d.categoria === goal.categoria)?.valor || 0;
 
           return (
             <GlassCard key={goal.categoria} delay={0.15 + index * 0.06} className="relative overflow-hidden oppo-card glass-refractive">
@@ -59,7 +61,14 @@ const Savings = ({ onLogout }: SavingsProps) => {
                   {emojiByCategory[goal.categoria] || '💰'}
                 </div>
                 <div className="flex-1">
-                  <p className="text-headline font-bold text-foreground">{goal.categoria}</p>
+                  <div className="flex flex-col gap-1 items-start">
+                    <p className="text-headline font-bold text-foreground">{goal.categoria}</p>
+                    {suggestedDeposit > 0 && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-success/20 text-success uppercase tracking-wider border border-success/30">
+                        + R$ {suggestedDeposit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} sugerido hoje
+                      </span>
+                    )}
+                  </div>
                   <p className="text-caption font-bold text-muted-foreground/80 tracking-tight">
                     R$ {Number(goal.valor_acumulado || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     {hasMeta

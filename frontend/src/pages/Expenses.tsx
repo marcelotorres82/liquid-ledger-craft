@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, ArrowDownRight, CreditCard, Utensils, Wifi, Smartphone, Home, Zap, ShoppingBag, Car, Check } from 'lucide-react';
 import ExpenseSheet from '@/components/ExpenseSheet';
+import PageContainer from '@/components/PageContainer';
 import { getCategoryLabel, parseExpenseDescription } from '@/lib/expenseMeta';
 import { formatCurrency, formatDate, toISODate, getMonthName } from '@/lib/format';
 import { useFinanceStore } from '@/store/financeStore';
@@ -51,6 +52,8 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
       data_inicio: item.data_inicio,
       paga: !item.paga,
       data_pagamento: novaDataPagamento,
+      mes_referencia: currentMonth, 
+      ano_referencia: currentYear,
     });
   };
 
@@ -97,6 +100,8 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
   }, [despesasFixas, despesasAvulsas, despesasParceladas, currentMonth]);
 
   const total = allExpenses.reduce((sum, e) => sum + e.valor_exibicao, 0);
+  const totalPago = allExpenses.filter(e => e.paga).reduce((sum, e) => sum + e.valor_exibicao, 0);
+  const totalPendente = total - totalPago;
 
   const handleSave = async (payload: {
     descricao: string;
@@ -108,12 +113,13 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
     parcelas_total?: number;
     valor_primeira_parcela?: number;
   }) => {
+    const dataToSave = { ...payload, mes_referencia: currentMonth, ano_referencia: currentYear };
     if (editing) {
-      await editDespesa(editing.id, payload);
+      await editDespesa(editing.id, dataToSave);
       setEditing(null);
       return;
     }
-    await addDespesa(payload);
+    await addDespesa(dataToSave);
   };
 
   const handleDelete = async (id: number) => {
@@ -122,30 +128,8 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-28">
-      <div className="mx-auto max-w-lg px-4 pt-12 sm:pt-16">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={transition}
-          className="mb-8 flex items-start justify-between"
-        >
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Despesas</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {getMonthName(currentMonth)} {currentYear}
-            </p>
-          </div>
-          <button
-            onClick={onLogout}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Sair
-          </button>
-        </motion.div>
-
-        <div className="space-y-4">
+    <PageContainer title="Despesas" onLogout={onLogout}>
+      <div className="space-y-4">
           {/* Total Card */}
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -159,12 +143,14 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
             <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight tabular text-destructive mb-4">
               {formatCurrency(total)}
             </h2>
-            <div className="glass-card-static rounded-2xl p-4">
-              <div className="flex items-center gap-2">
-                <ArrowDownRight className="h-4 w-4 text-destructive" />
-                <p className="text-sm font-medium text-destructive">
-                  {allExpenses.length} {allExpenses.length === 1 ? 'despesa' : 'despesas'}
-                </p>
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+              <div className="glass-card-static rounded-2xl p-3 sm:p-4 border-l-2 border-l-success border-t-0 border-r-0 border-b-0 bg-success/5">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 opacity-80">Pago</p>
+                <p className="text-sm sm:text-base font-bold text-success truncate">{formatCurrency(totalPago)}</p>
+              </div>
+              <div className="glass-card-static rounded-2xl p-3 sm:p-4 border-l-2 border-l-destructive border-t-0 border-r-0 border-b-0 bg-destructive/5">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 opacity-80">Falta Pagar</p>
+                <p className="text-sm sm:text-base font-bold text-destructive truncate">{formatCurrency(totalPendente)}</p>
               </div>
             </div>
           </motion.div>
@@ -300,7 +286,6 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
             </motion.div>
           )}
         </div>
-      </div>
 
       <ExpenseSheet
         open={sheetOpen}
@@ -314,18 +299,14 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
         editing={editing}
       />
 
-      {isMutating && (
-        <p className="fixed bottom-24 left-1/2 -translate-x-1/2 text-caption text-muted-foreground bg-card/80 px-3 py-1.5 rounded-xl border border-border">
-          Salvando alterações...
-        </p>
-      )}
+      {/* Removed isMutating toast for instant UX */}
 
       {error && (
         <p className="fixed bottom-20 left-1/2 -translate-x-1/2 text-caption text-destructive bg-card/80 px-3 py-1.5 rounded-xl border border-border">
           {error}
         </p>
       )}
-    </div>
+    </PageContainer>
   );
 };
 

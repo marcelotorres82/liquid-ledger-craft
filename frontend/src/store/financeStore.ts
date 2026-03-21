@@ -320,13 +320,25 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
   },
 
   editDespesa: async (id, payload) => {
-    set({ isMutating: true, error: '' });
+    const { despesasFixas, despesasAvulsas, despesasParceladas } = get();
+    
+    const applyOptimistic = (arr: Despesa[]) => 
+      arr.map(d => d.id === id ? { ...d, ...payload } : d);
+
+    set({ 
+      isMutating: true, 
+      error: '',
+      despesasFixas: applyOptimistic(despesasFixas) as Despesa[],
+      despesasAvulsas: applyOptimistic(despesasAvulsas) as Despesa[],
+      despesasParceladas: applyOptimistic(despesasParceladas) as Despesa[]
+    });
 
     try {
       await updateDespesa(id, payload);
       await get().refreshData();
     } catch (error) {
       set({ error: extractErrorMessage(error) });
+      await get().refreshData();
       throw error;
     } finally {
       set({ isMutating: false });
