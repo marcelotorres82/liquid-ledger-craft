@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
-    "@libsql/client": "^0.14.0",
+    "@libsql/client": "^0.17.0",
     "@prisma/adapter-libsql": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "bcryptjs": "^2.4.3",
