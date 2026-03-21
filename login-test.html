@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Teste - API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; background: #f5f5f5; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        .alert { padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .hidden { display: none; }
+        .debug { background: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 4px; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Login Teste API</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="login">Login:</label>
+                <input type="text" id="login" value="marcelo" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" value="042016" required>
+            </div>
+            
+            <button type="submit">Fazer Login</button>
+        </form>
+        
+        <div id="alert" class="alert hidden"></div>
+        <div id="debug" class="debug hidden"></div>
+        
+        <div style="margin-top: 30px;">
+            <button onclick="testAPI()">Testar API</button>
+            <button onclick="testDatabase()">Testar Database</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.classList.remove('hidden');
+        }
+        
+        function showDebug(message) {
+            const debug = document.getElementById('debug');
+            debug.textContent = message;
+            debug.classList.remove('hidden');
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const login = document.getElementById('login').value;
+            const senha = document.getElementById('senha').value;
+            
+            showAlert('Processando...', 'success');
+            showDebug(`Enviando requisição para ${API_BASE}/auth`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'login',
+                        login: login,
+                        senha: senha
+                    })
+                });
+                
+                showDebug(`Status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                showDebug(`Resposta: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    showAlert(`Login successful! User: ${data.user?.nome}`, 'success');
+                    if (data.token) {
+                        localStorage.setItem('token', data.token);
+                        showDebug(`Token salvo: ${data.token.substring(0, 50)}...`);
+                    }
+                } else {
+                    showAlert(`Erro: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Erro de conexão: ${error.message}`, 'error');
+                showDebug(`Erro: ${error.stack}`);
+            }
+        });
+        
+        async function testAPI() {
+            showAlert('Testando API...', 'success');
+            try {
+                const response = await fetch(`${API_BASE}/auth`);
+                showDebug(`API Status: ${response.status} ${response.statusText}`);
+                showAlert('API está respondendo!', 'success');
+            } catch (error) {
+                showAlert(`Erro na API: ${error.message}`, 'error');
+                showDebug(`Erro: ${error.message}`);
+            }
+        }
+        
+        async function testDatabase() {
+            showAlert('Testando conexão com banco...', 'success');
+            try {
+                const response = await fetch(`${API_BASE}/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || 'test'}`
+                    }
+                });
+                const data = await response.json();
+                showDebug(`Database Test: ${JSON.stringify(data, null, 2)}`);
+                if (response.ok) {
+                    showAlert('Conexão com banco funcionando!', 'success');
+                } else {
+                    showAlert(`Erro no banco: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Erro no banco: ${error.message}`, 'error');
+                showDebug(`Erro: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

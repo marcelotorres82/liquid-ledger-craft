@@ -1,0 +1,136 @@
+WARNING! `--port` is deprecated, please use `--listen` instead
+Retrieving project…
+> Creating initial build
+
+> app-financeiro-v2@1.0.0 vercel-build
+> npm run ui:install && prisma generate && npm run ui:build
+
+
+> app-financeiro-v2@1.0.0 ui:install
+> npm install --prefix frontend
+
+
+up to date, audited 220 packages in 3s
+
+49 packages are looking for funding
+  run `npm fund` for details
+
+2 moderate severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+Environment variables loaded from .env
+Prisma schema loaded from lib/prisma/schema.prisma
+Error: Prisma schema validation - (get-dmmf wasm)
+Error code: P1012
+[1;91merror[0m: [1mNative type VarChar is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:18[0m
+[1;94m   | [0m
+[1;94m17 | [0m  id        Int      @id @default(autoincrement())
+[1;94m18 | [0m  nome      String   [1;91m@db.VarChar(100)[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type VarChar is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:19[0m
+[1;94m   | [0m
+[1;94m18 | [0m  nome      String   @db.VarChar(100)
+[1;94m19 | [0m  email     String   @unique [1;91m@db.VarChar(100)[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type VarChar is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:20[0m
+[1;94m   | [0m
+[1;94m19 | [0m  email     String   @unique @db.VarChar(100)
+[1;94m20 | [0m  senha     String   [1;91m@db.VarChar(255)[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type VarChar is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:34[0m
+[1;94m   | [0m
+[1;94m33 | [0m  id            Int      @id @default(autoincrement())
+[1;94m34 | [0m  descricao     String   [1;91m@db.VarChar(255)[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type Decimal is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:35[0m
+[1;94m   | [0m
+[1;94m34 | [0m  descricao     String   @db.VarChar(255)
+[1;94m35 | [0m  valor         Decimal  [1;91m@db.Decimal(10, 2)[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type Date is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:37[0m
+[1;94m   | [0m
+[1;94m36 | [0m  tipo          TipoReceita
+[1;94m37 | [0m  dataRegistro  DateTime @map("data_registro") [1;91m@db.Date[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type VarChar is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:52[0m
+[1;94m   | [0m
+[1;94m51 | [0m  id                  Int      @id @default(autoincrement())
+[1;94m52 | [0m  descricao           String   [1;91m@db.VarChar(255)[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type Decimal is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:53[0m
+[1;94m   | [0m
+[1;94m52 | [0m  descricao           String   @db.VarChar(255)
+[1;94m53 | [0m  valorParcela        Decimal  @map("valor_parcela") [1;91m@db.Decimal(10, 2)[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type Decimal is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:54[0m
+[1;94m   | [0m
+[1;94m53 | [0m  valorParcela        Decimal  @map("valor_parcela") @db.Decimal(10, 2)
+[1;94m54 | [0m  valorPrimeiraParcela Decimal? @map("valor_primeira_parcela") [1;91m@db.Decimal(10, 2)[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type Date is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:56[0m
+[1;94m   | [0m
+[1;94m55 | [0m  tipo                TipoDespesa
+[1;94m56 | [0m  dataInicio          DateTime @map("data_inicio") [1;91m@db.Date[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type Date is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:58[0m
+[1;94m   | [0m
+[1;94m57 | [0m  paga                Boolean  @default(false)
+[1;94m58 | [0m  dataPagamento       DateTime? @map("data_pagamento") [1;91m@db.Date[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type Decimal is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:78[0m
+[1;94m   | [0m
+[1;94m77 | [0m  ano             Int
+[1;94m78 | [0m  valorPago       Decimal  @map("valor_pago") [1;91m@db.Decimal(10, 2)[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type Date is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:79[0m
+[1;94m   | [0m
+[1;94m78 | [0m  valorPago       Decimal  @map("valor_pago") @db.Decimal(10, 2)
+[1;94m79 | [0m  dataPagamento   DateTime @default(now()) @map("data_pagamento") [1;91m@db.Date[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mNative type Text is not supported for sqlite connector.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:94[0m
+[1;94m   | [0m
+[1;94m93 | [0m  ano       Int
+[1;94m94 | [0m  conteudo  String   [1;91m@db.Text[0m
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating: You defined the enum `TipoReceita`. But the current connector does not support enums.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:111[0m
+[1;94m   | [0m
+[1;94m110 | [0m
+[1;94m111 | [0m[1;91menum TipoReceita {[0m
+[1;94m112 | [0m  fixa
+[1;94m113 | [0m  variavel
+[1;94m114 | [0m}
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating: You defined the enum `TipoDespesa`. But the current connector does not support enums.[0m
+  [1;94m-->[0m  [4mlib/prisma/schema.prisma:116[0m
+[1;94m   | [0m
+[1;94m115 | [0m
+[1;94m116 | [0m[1;91menum TipoDespesa {[0m
+[1;94m117 | [0m  fixa
+[1;94m118 | [0m  parcelada
+[1;94m119 | [0m  avulsa
+[1;94m120 | [0m}
+[1;94m   | [0m
+
+Validation Error Count: 16
+[Context: getDmmf]
+
+Prisma CLI Version : 5.22.0
+Error: Command "npm run vercel-build" exited with 1

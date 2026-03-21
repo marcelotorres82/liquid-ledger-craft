@@ -19,8 +19,10 @@ describe('format utility', () => {
 
     it('handles negative numbers', () => {
       const result = formatCurrency(-50.25);
-      expect(result).toContain('R$');
-      expect(result).toContain('-50,25'); // or '-\xa0R$\xa050,25'
+      const normalized = result.replace(/\s/g, '');
+      expect(normalized).toContain('R$');
+      expect(normalized).toContain('-');
+      expect(normalized).toContain('50,25');
     });
   });
 

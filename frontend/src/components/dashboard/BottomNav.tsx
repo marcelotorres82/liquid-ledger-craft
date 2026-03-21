@@ -2,11 +2,11 @@ import { Home, TrendingUp, ArrowDownCircle, Wallet, BarChart3 } from "lucide-rea
 import { useLocation, useNavigate } from "react-router-dom";
 
 const navItems = [
-  { icon: Home, label: "Início", path: "/app" },
-  { icon: TrendingUp, label: "Receitas", path: "/app/income" },
-  { icon: ArrowDownCircle, label: "Despesas", path: "/app/expenses" },
-  { icon: Wallet, label: "Caixinhas", path: "/app/savings" },
-  { icon: BarChart3, label: "Análise", path: "/app/analytics" },
+  { icon: Home, label: "Início", path: "/" },
+  { icon: TrendingUp, label: "Receitas", path: "/income" },
+  { icon: ArrowDownCircle, label: "Despesas", path: "/expenses" },
+  { icon: Wallet, label: "Caixinhas", path: "/savings" },
+  { icon: BarChart3, label: "Análise", path: "/analytics" },
 ];
 
 export const BottomNav = () => {
@@ -17,7 +17,8 @@ export const BottomNav = () => {
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
       <div className="glass-card-static rounded-3xl px-2 py-2 flex items-center gap-1">
         {navItems.map((item) => {
-          const active = location.pathname === item.path;
+          const active =
+            item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
           return (
             <button
               key={item.label}

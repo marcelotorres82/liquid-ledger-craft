@@ -1,58 +1,90 @@
-const API_BASE = '/api';
+const AUTO_REDIRECT_GUARD = 'login-auto-redirect-ts';
 
+// Usar a nova API configurada
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const login = document.getElementById('login').value.trim();
     const senha = document.getElementById('senha').value;
     const btnLogin = document.getElementById('btnLogin');
-    const alert = document.getElementById('alert');
     
     btnLogin.textContent = 'Entrando...';
     btnLogin.disabled = true;
     
     try {
-        const response = await fetch(`${API_BASE}/auth`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'login', login, senha })
-        });
-
-        const rawBody = await response.text();
-        let data = null;
-        try {
-            data = rawBody ? JSON.parse(rawBody) : null;
-        } catch (_) {
-            data = null;
-        }
-
-        if (response.ok && data?.success) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showAlert('Login realizado! Redirecionando...', 'success');
-            setTimeout(() => window.location.href = 'app/', 1000);
+        // Fazer login usando a API configurada
+        const data = await window.appAPI.login(login, senha);
+        
+        if (data.success) {
+            window.AppUtils.showAlert('Login realizado! Redirecionando...', 'success');
+            sessionStorage.setItem(AUTO_REDIRECT_GUARD, String(Date.now()));
+            // SIMPLES: usar replace para não voltar
+            setTimeout(() => {
+                window.location.replace('app/');
+            }, 1000);
         } else {
-            const message = data?.message
-                || (rawBody ? `Falha no login (${response.status}): ${rawBody.slice(0, 120)}` : `Falha no login (${response.status})`);
-            showAlert(message, 'error');
+            window.AppUtils.showAlert(data.message || 'Falha no login', 'error');
             btnLogin.textContent = 'Entrar';
             btnLogin.disabled = false;
         }
     } catch (error) {
-        showAlert(`Erro ao conectar ao servidor: ${error.message || 'verifique sua conexão'}`, 'error');
+        window.AppUtils.showAlert(`Erro ao conectar: ${error.message}`, 'error');
         btnLogin.textContent = 'Entrar';
         btnLogin.disabled = false;
     }
 });
 
+async function hasServerSession() {
+    try {
+        const data = await window.appAPI.request('/api/auth', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'check' })
+        });
+
+        if (data?.success && data.user) {
+            localStorage.setItem('app_user', JSON.stringify(data.user));
+            return true;
+        }
+    } catch (_error) {
+        // Sem sessão ativa no servidor.
+    }
+
+    return false;
+}
+
+// Verificar se usuário já está logado
+window.addEventListener('load', async () => {
+    const lastAutoRedirect = Number(sessionStorage.getItem(AUTO_REDIRECT_GUARD) || 0);
+    const stillCoolingDown = Date.now() - lastAutoRedirect < 3000;
+    if (stillCoolingDown) {
+        return;
+    }
+
+    if (await hasServerSession()) {
+        sessionStorage.setItem(AUTO_REDIRECT_GUARD, String(Date.now()));
+        console.log('Sessão do servidor válida encontrada, indo para app');
+        window.location.replace('app/');
+        return;
+    }
+
+    sessionStorage.removeItem(AUTO_REDIRECT_GUARD);
+
+    // Evita loop com estado legado sem cookie válido.
+    localStorage.removeItem('app_token');
+    localStorage.removeItem('app_user');
+});
+
+// Função legada para compatibilidade
 function showAlert(message, type) {
     const alert = document.getElementById('alert');
-    alert.textContent = message;
-    alert.className = `alert ${type}`;
-    alert.style.display = 'block';
-    
-    setTimeout(() => {
-        alert.style.display = 'none';
-    }, 5000);
+    if (alert) {
+        alert.textContent = message;
+        alert.className = `alert ${type}`;
+        alert.style.display = 'block';
+        setTimeout(() => {
+            alert.style.display = 'none';
+        }, 5000);
+    }
 }
 
 async function checkAuth() {

@@ -6,7 +6,7 @@ import type {
   User,
 } from '@/types/finance';
 
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
 
 interface ApiError {
   success?: boolean;
@@ -24,7 +24,7 @@ async function request<T>(
 ): Promise<T> {
   const { allowFailure = false } = requestOptions;
   const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'same-origin',
+    credentials: 'include',
     ...options,
     headers: {
       'Content-Type': 'application/json',

@@ -1,4 +1,4 @@
-// Prisma Schema para App Financeiro
+// Prisma Schema para App Financeiro - Versão Corrigida SQLite
 
 generator client {
   provider      = "prisma-client-js"
@@ -103,4 +103,3 @@ model Insight {
   @@index([usuarioId, mes, ano])
   @@map("insights")
 }
-

@@ -1,0 +1,51 @@
+WARNING! `--port` is deprecated, please use `--listen` instead
+Retrieving project…
+> Creating initial build
+
+> app-financeiro-v2@1.0.0 vercel-build
+> npm run ui:install && prisma generate && npm run ui:build
+
+
+> app-financeiro-v2@1.0.0 ui:install
+> npm install --prefix frontend
+
+
+up to date, audited 220 packages in 2s
+
+49 packages are looking for funding
+  run `npm fund` for details
+
+2 moderate severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+Environment variables loaded from .env
+Prisma schema loaded from lib/prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 109ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+
+> app-financeiro-v2@1.0.0 ui:build
+> npm run build --prefix frontend && mkdir -p public/app && find public/app -mindepth 1 -delete && cp -R frontend/dist/. public/app/
+
+
+> app-financeiro-ui@1.0.0 build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 2009 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   1.40 kB │ gzip:   0.71 kB
+dist/assets/index-DQ80rEQO.css   46.96 kB │ gzip:   8.99 kB
+dist/assets/index-HJ1x-ONx.js   415.21 kB │ gzip: 126.42 kB
+✓ built in 4.83s
+> Success! Build completed
+> Ready! Available at http://localhost:3001

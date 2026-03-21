@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sparkleItemAnimate, sparkleItemInitial, sparkleTransition } from "@/lib/motion";
 
 interface TransactionItemProps {
   icon: React.ReactNode;
@@ -33,10 +34,10 @@ const TransactionItem = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -12 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 12, height: 0, paddingTop: 0, paddingBottom: 0 }}
-      transition={{ duration: 0.4, delay, ease: [0.16, 1, 0.3, 1] }}
+      initial={sparkleItemInitial}
+      animate={sparkleItemAnimate}
+      exit={{ opacity: 0, x: 10, height: 0, paddingTop: 0, paddingBottom: 0 }}
+      transition={{ ...sparkleTransition, delay }}
       layout
       className={cn("flex items-center gap-3 py-3", hasActions && "cursor-pointer")}
       onClick={hasActions ? () => setShowActions((v) => !v) : undefined}

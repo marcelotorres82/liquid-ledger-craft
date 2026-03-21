@@ -1,22 +1,121 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifyToken } from '../lib/auth.js';
-import { queryRaw as query } from '../lib/prisma.js';
+import prisma from '../lib/prisma.js';
 import { setCorsHeaders } from '../lib/cors.js';
 import { handleApiError } from '../lib/errorHandler.js';
 
 const BASE_MODEL_CANDIDATES = [
   process.env.GEMINI_MODEL,
-  'gemini-1.5-pro',
-  'gemini-1.5-flash',
-  'gemini-2.0-flash-exp',
-  'gemini-1.0-pro',
+  'gemini-3.1-pro-preview',
+  'gemini-3-flash-preview',
+  'gemini-3.1-flash-lite-preview',
+  'gemini-2.5-pro',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
   'gemini-pro'
 ].filter(Boolean);
 
 let cachedModelName = process.env.GEMINI_MODEL || null;
+let cachedLatestGeminiModel = null;
+let latestGeminiModelFetchedAt = 0;
+const MODEL_CACHE_TTL_MS = 1000 * 60 * 60 * 6;
+
+const MODEL_DISCOVERY_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 function normalizeModelName(modelName) {
   return String(modelName).replace(/^models\//, '').trim();
+}
+
+function extractVersionParts(modelName) {
+  const match = /^gemini-(\d+)(?:\.(\d+))?/i.exec(modelName);
+  if (!match) {
+    return { major: 0, minor: 0 };
+  }
+
+  return {
+    major: Number.parseInt(match[1], 10) || 0,
+    minor: Number.parseInt(match[2] || '0', 10) || 0,
+  };
+}
+
+function getModelTierScore(modelName) {
+  const lower = modelName.toLowerCase();
+  if (lower.includes('pro')) return 3;
+  if (lower.includes('flash') && !lower.includes('lite')) return 2;
+  if (lower.includes('lite')) return 1;
+  return 0;
+}
+
+function isLikelyTextGeminiModel(modelName) {
+  const lower = modelName.toLowerCase();
+
+  if (!lower.startsWith('gemini-')) return false;
+  if (!/^gemini-\d/.test(lower)) return false;
+  if (lower.includes('embedding')) return false;
+  if (lower.includes('-image-') || lower.includes('imagen')) return false;
+  if (lower.includes('-audio-') || lower.includes('native-audio') || lower.includes('tts')) return false;
+  if (lower.includes('live')) return false;
+  if (lower.includes('computer-use')) return false;
+  if (lower.includes('veo') || lower.includes('aqa') || lower.includes('lyria')) return false;
+
+  return true;
+}
+
+function compareGeminiModelsDesc(a, b) {
+  const versionA = extractVersionParts(a);
+  const versionB = extractVersionParts(b);
+
+  if (versionA.major !== versionB.major) {
+    return versionB.major - versionA.major;
+  }
+
+  if (versionA.minor !== versionB.minor) {
+    return versionB.minor - versionA.minor;
+  }
+
+  const tierA = getModelTierScore(a);
+  const tierB = getModelTierScore(b);
+  if (tierA !== tierB) {
+    return tierB - tierA;
+  }
+
+  const previewA = a.toLowerCase().includes('preview') || a.toLowerCase().includes('exp');
+  const previewB = b.toLowerCase().includes('preview') || b.toLowerCase().includes('exp');
+  if (previewA !== previewB) {
+    return previewB ? 1 : -1;
+  }
+
+  return b.localeCompare(a);
+}
+
+async function discoverLatestGeminiModel(apiKey) {
+  const now = Date.now();
+  if (cachedLatestGeminiModel && now - latestGeminiModelFetchedAt < MODEL_CACHE_TTL_MS) {
+    return cachedLatestGeminiModel;
+  }
+
+  try {
+    const response = await fetch(`${MODEL_DISCOVERY_ENDPOINT}?key=${encodeURIComponent(apiKey)}`);
+    if (!response.ok) {
+      return '';
+    }
+
+    const payload = await response.json();
+    const latest = (payload.models || [])
+      .map((model) => normalizeModelName(model?.name || ''))
+      .filter(isLikelyTextGeminiModel)
+      .sort(compareGeminiModelsDesc)[0];
+
+    if (!latest) {
+      return '';
+    }
+
+    cachedLatestGeminiModel = latest;
+    latestGeminiModelFetchedAt = now;
+    return latest;
+  } catch (_error) {
+    return '';
+  }
 }
 
 function isModelNotFoundError(error) {
@@ -43,6 +142,10 @@ async function generateWithModelFallback(apiKey, prompt) {
     candidates.push(normalized);
   };
 
+  const latestDiscoveredModel = await discoverLatestGeminiModel(apiKey);
+
+  addCandidate(latestDiscoveredModel);
+  addCandidate(process.env.GEMINI_MODEL);
   addCandidate(cachedModelName);
   BASE_MODEL_CANDIDATES.forEach(addCandidate);
 
@@ -114,86 +217,79 @@ function getMonthYearFromDate(dateValue) {
 }
 
 async function loadFinancialSnapshot(userId, mes, ano) {
+  const inicioMes = new Date(ano, mes - 1, 1);
+  const inicioMesSeguinte = new Date(ano, mes, 1);
+
   const [receitasFixasResult, receitasVariaveisResult, despesasFixasResult, despesasAvulsasResult] =
     await Promise.all([
-      query(
-        `
-        SELECT COALESCE(SUM(valor), 0) AS total
-        FROM receitas
-        WHERE usuario_id = $1 AND tipo = 'fixa'
-        `,
-        [userId]
-      ),
-      query(
-        `
-        SELECT COALESCE(SUM(valor), 0) AS total
-        FROM receitas
-        WHERE usuario_id = $1
-          AND tipo = 'variavel'
-          AND EXTRACT(MONTH FROM data_registro) = $2
-          AND EXTRACT(YEAR FROM data_registro) = $3
-        `,
-        [userId, mes, ano]
-      ),
-      query(
-        `
-        SELECT COALESCE(SUM(valor_parcela), 0) AS total
-        FROM despesas
-        WHERE usuario_id = $1 AND tipo = 'fixa'
-        `,
-        [userId]
-      ),
-      query(
-        `
-        SELECT COALESCE(SUM(valor_parcela), 0) AS total
-        FROM despesas
-        WHERE usuario_id = $1
-          AND tipo = 'avulsa'
-          AND EXTRACT(MONTH FROM data_inicio) = $2
-          AND EXTRACT(YEAR FROM data_inicio) = $3
-        `,
-        [userId, mes, ano]
-      )
+      prisma.receita.aggregate({
+        where: { usuarioId: userId, tipo: 'fixa' },
+        _sum: { valor: true },
+      }),
+      prisma.receita.aggregate({
+        where: {
+          usuarioId: userId,
+          tipo: 'variavel',
+          dataRegistro: {
+            gte: inicioMes,
+            lt: inicioMesSeguinte,
+          },
+        },
+        _sum: { valor: true },
+      }),
+      prisma.despesa.aggregate({
+        where: { usuarioId: userId, tipo: 'fixa' },
+        _sum: { valorParcela: true },
+      }),
+      prisma.despesa.aggregate({
+        where: {
+          usuarioId: userId,
+          tipo: 'avulsa',
+          dataInicio: {
+            gte: inicioMes,
+            lt: inicioMesSeguinte,
+          },
+        },
+        _sum: { valorParcela: true },
+      }),
     ]);
 
   let parceladasRows = [];
   try {
-    const parceladasResult = await query(
-      `
-      SELECT valor_parcela, valor_primeira_parcela, data_inicio, parcelas_total
-      FROM despesas
-      WHERE usuario_id = $1 AND tipo = 'parcelada'
-      `,
-      [userId]
-    );
-    parceladasRows = parceladasResult.rows;
+    parceladasRows = await prisma.despesa.findMany({
+      where: { usuarioId: userId, tipo: 'parcelada' },
+      select: {
+        valorParcela: true,
+        valorPrimeiraParcela: true,
+        dataInicio: true,
+        parcelasTotal: true,
+      },
+    });
   } catch (error) {
     const message = String(error?.message || '').toLowerCase();
-    if (!message.includes('valor_primeira_parcela')) {
+    if (!message.includes('valor_primeira_parcela') && !message.includes('valorprimeiraparcel')) {
       throw error;
     }
 
-    // Compatibilidade com bancos sem a coluna nova
-    const fallbackResult = await query(
-      `
-      SELECT valor_parcela, data_inicio, parcelas_total
-      FROM despesas
-      WHERE usuario_id = $1 AND tipo = 'parcelada'
-      `,
-      [userId]
-    );
-    parceladasRows = fallbackResult.rows;
+    parceladasRows = await prisma.despesa.findMany({
+      where: { usuarioId: userId, tipo: 'parcelada' },
+      select: {
+        valorParcela: true,
+        dataInicio: true,
+        parcelasTotal: true,
+      },
+    });
   }
 
-  const receitasFixas = toNumber(receitasFixasResult.rows[0]?.total);
-  const receitasVariaveis = toNumber(receitasVariaveisResult.rows[0]?.total);
-  const despesasFixas = toNumber(despesasFixasResult.rows[0]?.total);
-  const despesasAvulsas = toNumber(despesasAvulsasResult.rows[0]?.total);
+  const receitasFixas = toNumber(receitasFixasResult._sum.valor);
+  const receitasVariaveis = toNumber(receitasVariaveisResult._sum.valor);
+  const despesasFixas = toNumber(despesasFixasResult._sum.valorParcela);
+  const despesasAvulsas = toNumber(despesasAvulsasResult._sum.valorParcela);
 
   let despesasParceladas = 0;
   for (const row of parceladasRows) {
-    const { month: mesInicio, year: anoInicio } = getMonthYearFromDate(row.data_inicio);
-    const parcelasTotal = Number.parseInt(row.parcelas_total, 10) || 1;
+    const { month: mesInicio, year: anoInicio } = getMonthYearFromDate(row.dataInicio);
+    const parcelasTotal = Number.parseInt(String(row.parcelasTotal), 10) || 1;
     const mesesDecorridos = (ano - anoInicio) * 12 + (mes - mesInicio);
 
     if (mesesDecorridos >= 0 && mesesDecorridos < parcelasTotal) {
@@ -322,17 +418,19 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const result = await query(
-        `
-        SELECT conteudo, updated_at
-        FROM insights
-        WHERE usuario_id = $1 AND mes = $2 AND ano = $3
-        LIMIT 1
-        `,
-        [userId, mes, ano]
-      );
+      const insight = await prisma.insight.findFirst({
+        where: {
+          usuarioId: userId,
+          mes,
+          ano,
+        },
+        select: {
+          conteudo: true,
+          updatedAt: true,
+        },
+      });
 
-      if (result.rows.length === 0) {
+      if (!insight) {
         return res.status(200).json({
           success: false,
           message: 'Nenhum insight disponível. Gere um novo insight.'
@@ -341,8 +439,8 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         success: true,
-        insight: result.rows[0].conteudo,
-        updated_at: result.rows[0].updated_at,
+        insight: insight.conteudo,
+        updated_at: insight.updatedAt,
         source: process.env.GEMINI_API_KEY ? 'gemini' : 'fallback',
         model: process.env.GEMINI_API_KEY ? getPreferredModelName() : 'local-rules-v1'
       });
@@ -385,15 +483,24 @@ export default async function handler(req, res) {
 
       let warning;
       try {
-        await query(
-          `
-          INSERT INTO insights (usuario_id, mes, ano, conteudo, created_at, updated_at)
-          VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-          ON CONFLICT (usuario_id, mes, ano)
-          DO UPDATE SET conteudo = EXCLUDED.conteudo, updated_at = CURRENT_TIMESTAMP
-          `,
-          [userId, mes, ano, insightText]
-        );
+        await prisma.insight.upsert({
+          where: {
+            usuarioId_mes_ano: {
+              usuarioId: userId,
+              mes,
+              ano,
+            },
+          },
+          create: {
+            usuarioId: userId,
+            mes,
+            ano,
+            conteudo: insightText,
+          },
+          update: {
+            conteudo: insightText,
+          },
+        });
       } catch (persistError) {
         console.error('Insight generated but failed to persist:', persistError);
         warning = 'Insight gerado, mas não foi salvo no histórico.';

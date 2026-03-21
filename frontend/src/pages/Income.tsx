@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, ArrowUpRight, Briefcase, Laptop, TrendingUp, Gift, DollarSign } from 'lucide-react';
-import { BottomNav } from '@/components/dashboard/BottomNav';
 import IncomeSheet from '@/components/IncomeSheet';
 import { formatCurrency, formatDate, toISODate, getMonthName } from '@/lib/format';
 import { useFinanceStore } from '@/store/financeStore';
@@ -25,7 +23,6 @@ const getIncomeIcon = (descricao: string) => {
 };
 
 const Income = ({ onLogout }: IncomeProps) => {
-  const navigate = useNavigate();
   const currentMonth = useFinanceStore((state) => state.currentMonth);
   const currentYear = useFinanceStore((state) => state.currentYear);
   const receitasFixas = useFinanceStore((state) => state.receitasFixas);
@@ -238,8 +235,6 @@ const Income = ({ onLogout }: IncomeProps) => {
           </motion.div>
         </div>
       </div>
-
-      <BottomNav />
 
       <IncomeSheet
         open={sheetOpen}

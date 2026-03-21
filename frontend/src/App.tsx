@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
 import FloatingTabBar from '@/components/FloatingTabBar';
 import Dashboard from '@/pages/Dashboard';
 import Income from '@/pages/Income';
@@ -12,6 +11,8 @@ import NotFound from '@/pages/NotFound';
 import { checkAuth, logoutRequest } from '@/services/api';
 import { useFinanceStore } from '@/store/financeStore';
 import { useUIStore } from '@/store/uiStore';
+
+const AUTH_REDIRECT_GUARD = 'app-auth-redirect-attempted';
 
 const App = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -31,11 +32,27 @@ const App = () => {
       try {
         const authenticatedUser = await checkAuth();
         if (!active) return;
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.removeItem(AUTH_REDIRECT_GUARD);
+        }
         setUser(authenticatedUser);
       } catch (_error) {
-        if (active) {
+        if (!active) return;
+
+        const alreadyRedirected =
+          typeof window !== 'undefined' && window.sessionStorage.getItem(AUTH_REDIRECT_GUARD) === '1';
+
+        if (!alreadyRedirected && typeof window !== 'undefined') {
+          localStorage.removeItem('user');
+          localStorage.removeItem('app_user');
+          localStorage.removeItem('app_token');
+          window.sessionStorage.setItem(AUTH_REDIRECT_GUARD, '1');
           window.location.replace('/index.html');
+          return;
         }
+
+        setUser(null);
+        setCheckingAuth(false);
         return;
       }
 
@@ -62,7 +79,12 @@ const App = () => {
     } catch (_error) {
       // Ignore logout API errors and force return to login.
     } finally {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(AUTH_REDIRECT_GUARD);
+      }
       localStorage.removeItem('user');
+      localStorage.removeItem('app_user');
+      localStorage.removeItem('app_token');
       window.location.replace('/index.html');
     }
   };
@@ -70,9 +92,28 @@ const App = () => {
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="glass-card rounded-3xl px-8 py-8 text-center flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="glass rounded-3xl px-6 py-5 text-center">
           <p className="text-subhead text-muted-foreground">Carregando interface...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4">
+        <div className="glass-card max-w-sm w-full text-center">
+          <h1 className="text-title-3 text-foreground mb-2">Sessão expirada</h1>
+          <p className="text-subhead text-muted-foreground mb-4">
+            Sua autenticação não foi validada. Faça login novamente para continuar.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.replace('/index.html')}
+            className="w-full rounded-2xl py-3 bg-foreground text-background text-subhead font-semibold tap-highlight-none"
+          >
+            Ir para login
+          </button>
         </div>
       </div>
     );
@@ -80,9 +121,8 @@ const App = () => {
 
   return (
     <HashRouter>
-      <div className="relative min-h-screen selection:bg-primary/20">
-        <div className="relative z-10">
-
+      <div className="relative min-h-screen bg-background">
+        <div className="relative">
           <AnimatePresence mode="wait">
             <Routes>
               <Route path="/" element={<Dashboard onLogout={handleLogout} />} />
@@ -94,6 +134,8 @@ const App = () => {
             </Routes>
           </AnimatePresence>
         </div>
+
+        <FloatingTabBar />
       </div>
     </HashRouter>
   );

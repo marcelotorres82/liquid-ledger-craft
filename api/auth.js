@@ -26,24 +26,32 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, message: 'Login é obrigatório' });
       }
 
-      const user = await prisma.usuario.findFirst({
+      const normalizedIdentifier = identificador.toLowerCase();
+      let user = await prisma.usuario.findFirst({
         where: {
-          OR: [
-            {
-              email: {
-                equals: identificador,
-                mode: 'insensitive',
-              },
-            },
-            {
-              nome: {
-                equals: identificador,
-                mode: 'insensitive',
-              },
-            },
-          ],
+          OR: [{ email: identificador }, { nome: identificador }],
         },
       });
+
+      // SQLite does not support Prisma string `mode: 'insensitive'`.
+      // Fallback to an in-memory case-insensitive match only when exact lookup misses.
+      if (!user) {
+        const users = await prisma.usuario.findMany({
+          select: {
+            id: true,
+            nome: true,
+            email: true,
+            senha: true,
+          },
+        });
+
+        user =
+          users.find((candidate) => {
+            const email = String(candidate.email ?? '').toLowerCase();
+            const nome = String(candidate.nome ?? '').toLowerCase();
+            return email === normalizedIdentifier || nome === normalizedIdentifier;
+          }) ?? null;
+      }
 
       if (!user) {
         return res.status(401).json({ success: false, message: 'Usuário não encontrado' });

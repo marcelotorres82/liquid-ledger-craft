@@ -7,6 +7,7 @@ import { getMonthName, getShortMonthName } from '@/lib/format';
 import { useFinanceStore } from '@/store/financeStore';
 import { useUIStore } from '@/store/uiStore';
 import { setSheetOpenState } from '@/lib/sheetState';
+import { sparkleTransition } from '@/lib/motion';
 
 interface PageContainerProps {
   children: React.ReactNode;
@@ -62,14 +63,14 @@ const PageContainer = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className={cn('min-h-screen pb-32 px-4 pt-8 max-w-lg mx-auto', className)}
+      transition={sparkleTransition}
+      className={cn('min-h-screen pb-28 px-4 pt-12 sm:pt-16 max-w-lg mx-auto', className)}
     >
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="mb-5"
+        transition={sparkleTransition}
+        className="mb-8"
       >
         <div
           className={cn(
@@ -90,7 +91,7 @@ const PageContainer = ({
             <button
               type="button"
               onClick={toggleTheme}
-              className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors tap-highlight-none"
+              className="w-11 h-11 rounded-2xl glass-card-static flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors tap-highlight-none"
               aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
             >
               {theme === 'dark' ? <SunMedium className="w-5 h-5" /> : <MoonStar className="w-5 h-5" />}
@@ -99,7 +100,7 @@ const PageContainer = ({
             <button
               type="button"
               onClick={onLogout}
-              className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors tap-highlight-none"
+              className="w-11 h-11 rounded-2xl glass-card-static flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors tap-highlight-none"
               aria-label="Sair"
             >
               <LogOut className="w-5 h-5" />
@@ -108,7 +109,7 @@ const PageContainer = ({
         </div>
 
         {!hideMonthPicker && (
-          <div className="glass-card p-1 flex items-center justify-between gap-1.5">
+          <div className="glass-card-static rounded-3xl p-1.5 flex items-center justify-between gap-1.5">
             <button
               type="button"
               onClick={() => changeMonth(-1)}
@@ -122,7 +123,7 @@ const PageContainer = ({
             <button
               type="button"
               onClick={() => setMonthPickerOpen(true)}
-              className="flex-1 rounded-xl px-3 py-2 bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-0.5 tap-highlight-none hover:bg-white/10 transition-colors"
+              className="flex-1 rounded-xl px-3 py-2 bg-secondary/55 border border-border/70 flex flex-col items-center justify-center gap-0.5 tap-highlight-none hover:bg-secondary/75 transition-colors"
               aria-label="Selecionar mês"
             >
               <div className="flex items-center gap-2">
@@ -167,7 +168,7 @@ const PageContainer = ({
                   initial={{ y: 24, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: 20, opacity: 0 }}
-                  transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                  transition={sparkleTransition}
                   className="fixed inset-0 flex items-center justify-center z-[60] p-4"
                 >
                   <div className="glass-card w-full max-w-md p-6">
@@ -175,7 +176,7 @@ const PageContainer = ({
                       <button
                         type="button"
                         onClick={() => setPickerYear((year) => year - 1)}
-                        className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-foreground hover:bg-white/10 tap-highlight-none"
+                        className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-foreground hover:bg-secondary/80 tap-highlight-none"
                         aria-label="Ano anterior"
                       >
                         <ChevronLeft className="w-6 h-6" />
@@ -186,7 +187,7 @@ const PageContainer = ({
                       <button
                         type="button"
                         onClick={() => setPickerYear((year) => year + 1)}
-                        className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-foreground hover:bg-white/10 tap-highlight-none"
+                        className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-foreground hover:bg-secondary/80 tap-highlight-none"
                         aria-label="Próximo ano"
                       >
                         <ChevronRight className="w-6 h-6" />

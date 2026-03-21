@@ -1,8 +1,6 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { Bot, BrainCircuit, Cpu, Sparkles, WandSparkles, Home, TrendingUp, TrendingDown, PiggyBank, BarChart3 } from 'lucide-react';
-import { LiquidGlass } from './LiquidGlass';
-import { cn } from "@/lib/utils";
-import { useLocation, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Bot, BrainCircuit, Cpu, Sparkles, WandSparkles } from 'lucide-react';
+import { sparkleItemAnimate, sparkleItemInitial, sparkleTransition } from '@/lib/motion';
 
 interface AiInsightsCardProps {
   lines: string[];
@@ -32,56 +30,36 @@ function renderBoldSegments(text: string) {
 }
 
 const AiInsightsCard = ({ lines, hint, isLoading, source, model, onRefresh }: AiInsightsCardProps) => {
+  const normalizedSource = String(source || '').trim();
+  const normalizedModel = String(model || '').trim();
+  const sourceUnavailable = /n[aã]o informad[ao]/i.test(normalizedSource);
+  const modelUnavailable = /n[aã]o informad[ao]/i.test(normalizedModel);
+
   const providerLabel =
-    source === 'gemini'
+    normalizedSource === 'gemini'
       ? 'Google Gemini'
-      : source === 'fallback'
-        ? 'Motor local'
-        : source
-          ? source
-          : 'IA não informada';
-  const modelLabel = model || 'Modelo não informado';
+      : normalizedSource === 'fallback'
+      ? 'Motor local'
+      : normalizedSource;
+  const normalizedHint = String(hint || '').trim();
+  const hideHint = lines.length === 0 && /nenhum insight/i.test(normalizedHint);
 
   return (
-    <LiquidGlass
-      initial={{ opacity: 0, y: 10 }}
+    <motion.section
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      className="oppo-card glass-refractive mb-6 group relative"
+      transition={sparkleTransition}
+      className="glass-card ai-intelligence-card mb-6 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-purple-500/5 opacity-40 pointer-events-none" />
       <div className="ai-glow" aria-hidden="true" />
 
       <header className="flex items-start justify-between gap-3 mb-4 relative z-10">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="relative w-12 h-12 flex items-center justify-center">
-            <motion.div 
-              animate={{ 
-                scale: [1, 1.15, 1],
-                opacity: [0.4, 0.7, 0.4] 
-              }}
-              transition={{ 
-                duration: 4, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-              className="ai-orb-pulse absolute inset-0 bg-primary/20 rounded-full blur-md" 
-              aria-hidden="true" 
-            />
-            <motion.div 
-              animate={{ 
-                rotate: 360 
-              }}
-              transition={{ 
-                duration: 8, 
-                repeat: Infinity, 
-                ease: "linear" 
-              }}
-              className="ai-orb relative z-10 flex items-center justify-center" 
-              aria-hidden="true"
-            >
-              <Sparkles className="w-5 h-5 text-foreground drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-            </motion.div>
+          <div className="relative w-11 h-11 flex items-center justify-center">
+            <div className="ai-orb-pulse" aria-hidden="true" />
+            <div className="ai-orb" aria-hidden="true">
+              <Sparkles className="w-4 h-4 text-foreground" />
+            </div>
           </div>
           <div className="min-w-0">
             <p className="text-caption uppercase tracking-[0.16em] text-muted-foreground">IA em uso</p>
@@ -100,14 +78,18 @@ const AiInsightsCard = ({ lines, hint, isLoading, source, model, onRefresh }: Ai
       </header>
 
       <div className="flex flex-wrap items-center gap-2 mb-4 relative z-10">
-        <span className="ai-meta-chip">
-          <Cpu className="w-3.5 h-3.5" />
-          {providerLabel}
-        </span>
-        <span className="ai-meta-chip">
-          <Bot className="w-3.5 h-3.5" />
-          {modelLabel}
-        </span>
+        {providerLabel && !sourceUnavailable && (
+          <span className="ai-meta-chip">
+            <Cpu className="w-3.5 h-3.5" />
+            {providerLabel}
+          </span>
+        )}
+        {normalizedModel && !modelUnavailable && (
+          <span className="ai-meta-chip">
+            <Bot className="w-3.5 h-3.5" />
+            {normalizedModel}
+          </span>
+        )}
         <span className="ai-brain-widget">
           <BrainCircuit className="w-3.5 h-3.5 text-foreground" />
           <span className="text-caption text-foreground">Leitura contextual ativa</span>
@@ -125,10 +107,10 @@ const AiInsightsCard = ({ lines, hint, isLoading, source, model, onRefresh }: Ai
           lines.map((line, index) => (
             <motion.article
               key={`${line}-${index}`}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.08 * index }}
-              className="liquid-glass-sm p-4 flex items-start gap-3"
+              initial={sparkleItemInitial}
+              animate={sparkleItemAnimate}
+              transition={{ ...sparkleTransition, delay: 0.08 * index }}
+              className="ai-insight-item"
             >
               <div className="ai-insight-badge">{index + 1}</div>
               <p className="text-subhead text-foreground flex-1">{renderBoldSegments(line)}</p>
@@ -144,13 +126,13 @@ const AiInsightsCard = ({ lines, hint, isLoading, source, model, onRefresh }: Ai
         )}
       </div>
 
-      {hint && (
+      {normalizedHint && !hideHint && (
         <div className="ai-footnote mt-4 relative z-10">
           <WandSparkles className="w-3.5 h-3.5 shrink-0" />
-          <p>{hint}</p>
+          <p>{normalizedHint}</p>
         </div>
       )}
-    </LiquidGlass>
+    </motion.section>
   );
 };
 

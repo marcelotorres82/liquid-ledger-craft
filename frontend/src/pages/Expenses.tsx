@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, ArrowDownRight, CreditCard, Utensils, Wifi, Smartphone, Home, Zap, ShoppingBag, Car, Check } from 'lucide-react';
-import { BottomNav } from '@/components/dashboard/BottomNav';
 import ExpenseSheet from '@/components/ExpenseSheet';
 import { getCategoryLabel, parseExpenseDescription } from '@/lib/expenseMeta';
 import { formatCurrency, formatDate, toISODate, getMonthName } from '@/lib/format';
@@ -298,8 +296,6 @@ const Expenses = ({ onLogout }: ExpensesProps) => {
           )}
         </div>
       </div>
-
-      <BottomNav />
 
       <ExpenseSheet
         open={sheetOpen}

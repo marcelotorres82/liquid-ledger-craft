@@ -1,0 +1,60 @@
+// Schema simplificado para SQLite
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  senha     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Receita {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int
+  descricao     String
+  valor         Float
+  tipo          String   // 'fixa' | 'variavel'
+  dataRegistro  DateTime @default(now()) @map("data_registro")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
+model Despesa {
+  id              Int      @id @default(autoincrement())
+  usuarioId       Int
+  descricao       String
+  valor           Float
+  valorParcela    Float    @map("valor_parcela")
+  tipo            String   // 'fixa' | 'variavel' | 'parcelada'
+  dataInicio      DateTime @default(now()) @map("data_inicio")
+  paga            Boolean  @default(false)
+  parcelaAtual   Int?     @map("parcela_atual")
+  parcelasTotal  Int?     @map("parcelas_total")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
+model Insight {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  mes       Int
+  ano       Int
+  conteudo  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}

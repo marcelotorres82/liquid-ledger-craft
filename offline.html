@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Financeiro - Modo Offline</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { color: #333; font-size: 28px; margin-bottom: 10px; }
+        .logo p { color: #666; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        input { width: 100%; padding: 12px 16px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+        input:focus { outline: none; border-color: #667eea; }
+        button { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+        button:hover { transform: translateY(-2px); }
+        .alert { padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .hidden { display: none; }
+        .dashboard { display: none; }
+        .dashboard.active { display: block; }
+        .card { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .card h3 { color: #333; margin-bottom: 15px; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #667eea; }
+        .stat-label { font-size: 12px; color: #666; margin-top: 5px; }
+        .menu-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .menu-btn { padding: 15px; background: white; border: 2px solid #e1e5e9; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .menu-btn:hover { border-color: #667eea; background: #f8f9ff; }
+        .logout-btn { background: #dc3545; margin-top: 20px; }
+        .logout-btn:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Form -->
+        <div id="loginSection">
+            <div class="logo">
+                <h1>💰 App Financeiro</h1>
+                <p>Controle suas finanças de forma inteligente</p>
+            </div>
+            
+            <div id="alert" class="alert hidden"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="login">Login:</label>
+                    <input type="text" id="login" value="marcelo" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="senha">Senha:</label>
+                    <input type="password" id="senha" value="042016" required>
+                </div>
+                
+                <button type="submit">Entrar</button>
+            </form>
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <button onclick="simulateLogin()" style="background: #28a745;">Entrar em Modo Offline (Teste)</button>
+            </div>
+        </div>
+        
+        <!-- Dashboard -->
+        <div id="dashboardSection" class="dashboard">
+            <div class="logo">
+                <h1>💰 Dashboard</h1>
+                <p id="userName">Bem-vindo!</p>
+            </div>
+            
+            <div class="card">
+                <h3>📊 Resumo Mensal</h3>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value">R$ 5.000</div>
+                        <div class="stat-label">Receitas</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">R$ 2.040</div>
+                        <div class="stat-label">Despesas</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">R$ 2.960</div>
+                        <div class="stat-label">Saldo</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">59%</div>
+                        <div class="stat-label">Economia</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🎯 Caixinhas</h3>
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Casa</span>
+                        <span>45%</span>
+                    </div>
+                    <div style="background: #e1e5e9; height: 8px; border-radius: 4px;">
+                        <div style="background: #667eea; width: 45%; height: 100%; border-radius: 4px;"></div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Carro</span>
+                        <span>30%</span>
+                    </div>
+                    <div style="background: #e1e5e9; height: 8px; border-radius: 4px;">
+                        <div style="background: #764ba2; width: 30%; height: 100%; border-radius: 4px;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-buttons">
+                <button class="menu-btn" onclick="showPage('receitas')">📈 Receitas</button>
+                <button class="menu-btn" onclick="showPage('despesas')">📉 Despesas</button>
+                <button class="menu-btn" onclick="showPage('insights')">🤖 Insights</button>
+                <button class="menu-btn" onclick="showPage('config')">⚙️ Config</button>
+            </div>
+            
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.classList.remove('hidden');
+            
+            setTimeout(() => {
+                alert.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // Simulação de login offline
+        function simulateLogin() {
+            const login = document.getElementById('login').value;
+            const senha = document.getElementById('senha').value;
+            
+            if (login === 'marcelo' && senha === '042016') {
+                currentUser = { nome: 'Marcelo Torres', email: 'marcelo' };
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').classList.add('active');
+                document.getElementById('userName').textContent = `Bem-vindo, ${currentUser.nome}!`;
+                
+                showAlert('Login realizado com sucesso (modo offline)', 'success');
+            } else {
+                showAlert('Credenciais incorretas', 'error');
+            }
+        }
+        
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('user');
+            
+            document.getElementById('dashboardSection').classList.remove('active');
+            document.getElementById('loginSection').style.display = 'block';
+            
+            showAlert('Logout realizado', 'success');
+        }
+        
+        function showPage(page) {
+            showAlert(`Página "${page}" seria carregada (modo offline)`, 'warning');
+        }
+        
+        // Form submit
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            showAlert('Servidor não disponível. Use o modo offline para testar.', 'warning');
+        });
+        
+        // Check if user is already logged in
+        window.addEventListener('load', () => {
+            const savedUser = localStorage.getItem('user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').classList.add('active');
+                document.getElementById('userName').textContent = `Bem-vindo, ${currentUser.nome}!`;
+            }
+        });
+    </script>
+</body>
+</html>

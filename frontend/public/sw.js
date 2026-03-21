@@ -1,4 +1,4 @@
-const CACHE_NAME = 'app-financeiro-v1';
+const CACHE_NAME = 'app-financeiro-v4';
 const PRECACHE = ['/app/', '/app/index.html', '/app/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {

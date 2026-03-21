@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { sparkleTransition } from "@/lib/motion";
 
 interface GlassProgressBarProps {
   value: number;
@@ -28,7 +29,7 @@ const GlassProgressBar = ({ value, max, variant = "savings", className }: GlassP
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        transition={{ ...sparkleTransition, duration: 0.8, delay: 0.2 }}
         className={cn("h-full rounded-full", gradientMap[variant], glowMap[variant])}
       />
     </div>
