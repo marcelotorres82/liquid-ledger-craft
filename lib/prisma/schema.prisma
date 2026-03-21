@@ -1,12 +1,11 @@
 // Prisma Schema para App Financeiro
 
 generator client {
-  provider      = "prisma-client-js"
-  output        = "./generated/client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "sqlite"
+  provider = "sqlite"
 }
 
 // ===================================
