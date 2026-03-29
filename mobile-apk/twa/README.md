@@ -34,6 +34,22 @@ npx @bubblewrap/cli update
 npx @bubblewrap/cli build
 ```
 
+## Projeto já pronto neste repositório
+
+Este repo já contém um projeto TWA inicializado em:
+
+`mobile-apk/twa/app-financeiro-twa`
+
+Fluxo típico para gerar um novo APK (após um novo deploy do app web):
+
+```bash
+cd mobile-apk/twa/app-financeiro-twa
+npx @bubblewrap/cli update --manifest=https://app-financeiro-ten-rose.vercel.app/app/manifest.webmanifest
+npx @bubblewrap/cli build
+```
+
+O APK assinado costuma ser gerado em `mobile-apk/twa/app-financeiro-twa/app/build/outputs/apk/release/`.
+
 ## Atualização após novo deploy
 
 Se você já inicializou o projeto TWA uma vez:
@@ -49,3 +65,4 @@ npx @bubblewrap/cli build
 - O app Android consumirá a **mesma API backend** na Vercel.
 - Dados continuam centralizados no PostgreSQL/Prisma.
 - Para não misturar dados entre pessoas, cada pessoa deve usar login próprio.
+- Para não aparecer a barra do navegador, o domínio deve servir `/.well-known/assetlinks.json` com o `packageId` e o fingerprint do APK (arquivo no repo: `public/.well-known/assetlinks.json`).

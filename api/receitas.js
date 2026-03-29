@@ -99,10 +99,17 @@ export default async function handler(req, res) {
     const ano = parseInt(req.query.ano, 10) || reference.ano;
 
     try {
+      const inicioMes = new Date(ano, mes - 1, 1);
+      const inicioMesSeguinte = new Date(ano, mes, 1);
+
       const fixas = await prisma.receita.findMany({
         where: {
           usuarioId: userId,
           tipo: 'fixa',
+          dataRegistro: {
+            gte: inicioMes,
+            lt: inicioMesSeguinte,
+          },
         },
         orderBy: { dataRegistro: 'desc' },
       });
@@ -112,8 +119,8 @@ export default async function handler(req, res) {
           usuarioId: userId,
           tipo: 'variavel',
           dataRegistro: {
-            gte: new Date(ano, mes - 1, 1),
-            lt: new Date(ano, mes, 1),
+            gte: inicioMes,
+            lt: inicioMesSeguinte,
           },
         },
         orderBy: { dataRegistro: 'desc' },

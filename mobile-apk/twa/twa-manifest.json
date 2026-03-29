@@ -1,5 +1,5 @@
 {
-  "packageId": "app.vercel.app_financeiro_ten_rose.twa",
+  "packageId": "com.marcelo.appfinanceiro",
   "host": "app-financeiro-ten-rose.vercel.app",
   "name": "App Financeiro",
   "launcherName": "Finanças",
@@ -12,19 +12,19 @@
   "navigationDividerColorDark": "#000000",
   "backgroundColor": "#0F172A",
   "enableNotifications": true,
-  "startUrl": "/index.html",
-  "iconUrl": "https://app-financeiro-ten-rose.vercel.app/assets/icons/icon-512.png",
-  "maskableIconUrl": "https://app-financeiro-ten-rose.vercel.app/assets/icons/icon-512.png",
+  "startUrl": "/app/",
+  "iconUrl": "https://app-financeiro-ten-rose.vercel.app/app/icons/app-icon.png",
+  "maskableIconUrl": "https://app-financeiro-ten-rose.vercel.app/app/icons/app-icon.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
-    "path": "/mnt/dados/app-financeiro/mobile-apk/twa/android.keystore",
+    "path": "./android.keystore",
     "alias": "android"
   },
   "appVersionName": "1",
   "appVersionCode": 1,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://app-financeiro-ten-rose.vercel.app/manifest.json",
+  "webManifestUrl": "https://app-financeiro-ten-rose.vercel.app/app/manifest.webmanifest",
   "fallbackType": "customtabs",
   "features": {},
   "alphaDependencies": {
@@ -33,10 +33,12 @@
   "enableSiteSettingsShortcut": false,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "fullScopeUrl": "https://app-financeiro-ten-rose.vercel.app/",
+  "fullScopeUrl": "https://app-financeiro-ten-rose.vercel.app/app/",
   "minSdkVersion": 21,
   "orientation": "portrait",
-  "fingerprints": [],
+  "fingerprints": [
+    "1A:A3:6F:2C:61:6B:D8:AA:F8:5D:C1:08:A7:4F:26:91:59:EC:EA:3C:E4:19:0A:32:28:74:87:B6:DB:8D:8B:1F"
+  ],
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "protocolHandlers": [],

@@ -200,6 +200,9 @@ export default async function handler(req, res) {
           where: {
             usuarioId: userId,
             tipo: 'fixa',
+            dataInicio: {
+              lt: inicioMesSeguinte,
+            },
           },
           include: { pagamentos: { where: { mes, ano } } },
           orderBy: { dataInicio: 'desc' },

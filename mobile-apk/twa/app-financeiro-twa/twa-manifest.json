@@ -13,7 +13,7 @@
   "backgroundColor": "#FFFFFF",
   "enableNotifications": true,
   "startUrl": "/app/",
-  "iconUrl": "https://app-financeiro-ten-rose.vercel.app/app/icons/icon-512.png",
+  "iconUrl": "https://app-financeiro-ten-rose.vercel.app/app/icons/app-icon.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "android_new.keystore",

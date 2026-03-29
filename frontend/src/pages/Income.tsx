@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, ArrowUpRight, Briefcase, Laptop, TrendingUp, Gift, DollarSign } from 'lucide-react';
 import IncomeSheet from '@/components/IncomeSheet';
-import { formatCurrency, formatDate, toISODate, getMonthName } from '@/lib/format';
+import PageContainer from '@/components/PageContainer';
+import { formatCurrency, formatDate, toISODate } from '@/lib/format';
 import { useFinanceStore } from '@/store/financeStore';
 import type { Receita } from '@/types/finance';
 
@@ -79,30 +80,8 @@ const Income = ({ onLogout }: IncomeProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-28">
-      <div className="mx-auto max-w-lg px-4 pt-12 sm:pt-16">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={transition}
-          className="mb-8 flex items-start justify-between"
-        >
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Receitas</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {getMonthName(currentMonth)} {currentYear}
-            </p>
-          </div>
-          <button
-            onClick={onLogout}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Sair
-          </button>
-        </motion.div>
-
-        <div className="space-y-4">
+    <PageContainer title="Receitas" subtitle="Controle das entradas no período" onLogout={onLogout}>
+      <div className="space-y-4">
           {/* Total Card */}
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -237,7 +216,6 @@ const Income = ({ onLogout }: IncomeProps) => {
             </div>
           </motion.div>
         </div>
-      </div>
 
       <IncomeSheet
         open={sheetOpen}
@@ -261,7 +239,7 @@ const Income = ({ onLogout }: IncomeProps) => {
           {error}
         </p>
       )}
-    </div>
+    </PageContainer>
   );
 };
 

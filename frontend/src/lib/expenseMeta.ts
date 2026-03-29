@@ -10,6 +10,11 @@ export interface ExpenseCategoryMeta {
 export const EXPENSE_CATEGORIES: ExpenseCategoryMeta[] = [
   { key: 'contas_fixas', label: 'Contas fixas', color: '#3B82F6', icon: '🏠' },
   { key: 'contas_variaveis', label: 'Contas variáveis', color: '#8B5CF6', icon: '📄' },
+  { key: 'transporte', label: 'Transporte', color: '#06B6D4', icon: '🚗' },
+  { key: 'educacao', label: 'Educação', color: '#22C55E', icon: '🎓' },
+  { key: 'saude', label: 'Saúde', color: '#F97316', icon: '💊' },
+  { key: 'impostos', label: 'Impostos', color: '#64748B', icon: '🧾' },
+  { key: 'assinaturas', label: 'Assinaturas', color: '#A855F7', icon: '📺' },
   { key: 'alimentacao', label: 'Alimentação', color: '#F59E0B', icon: '🍽️' },
   { key: 'compras', label: 'Compras', color: '#EC4899', icon: '🛍️' },
   { key: 'entretenimento', label: 'Entretenimento', color: '#14B8A6', icon: '🎬' },

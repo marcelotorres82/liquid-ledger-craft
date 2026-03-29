@@ -223,7 +223,14 @@ async function loadFinancialSnapshot(userId, mes, ano) {
   const [receitasFixasResult, receitasVariaveisResult, despesasFixasResult, despesasAvulsasResult] =
     await Promise.all([
       prisma.receita.aggregate({
-        where: { usuarioId: userId, tipo: 'fixa' },
+        where: {
+          usuarioId: userId,
+          tipo: 'fixa',
+          dataRegistro: {
+            gte: inicioMes,
+            lt: inicioMesSeguinte,
+          },
+        },
         _sum: { valor: true },
       }),
       prisma.receita.aggregate({
@@ -238,7 +245,13 @@ async function loadFinancialSnapshot(userId, mes, ano) {
         _sum: { valor: true },
       }),
       prisma.despesa.aggregate({
-        where: { usuarioId: userId, tipo: 'fixa' },
+        where: {
+          usuarioId: userId,
+          tipo: 'fixa',
+          dataInicio: {
+            lt: inicioMesSeguinte,
+          },
+        },
         _sum: { valorParcela: true },
       }),
       prisma.despesa.aggregate({

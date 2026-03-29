@@ -188,21 +188,29 @@ export default async function handler(req, res) {
     const inicioCiclo = new Date(ciclo.ano, ciclo.mes - 1, 1);
     const mesesNoCiclo = listMonthsInRange(ciclo.mes, ciclo.ano, mes, ano);
 
-    const [
-      receitasFixas,
-      receitasVariaveis,
-      despesasFixas,
-      despesasAvulsas,
-      parceladas,
-      receitasVariaveisCiclo,
-      despesasAvulsasCiclo,
-      despesasFixasIndividuais,
-      despesasAvulsasIndividuais,
-    ] = await Promise.all([
-      prisma.receita.aggregate({
-        where: { usuarioId: userId, tipo: 'fixa' },
-        _sum: { valor: true },
-      }),
+	    const [
+	      receitasFixas,
+	      receitasVariaveis,
+	      despesasFixas,
+	      despesasAvulsas,
+	      parceladas,
+	      receitasFixasCiclo,
+	      receitasVariaveisCiclo,
+	      despesasAvulsasCiclo,
+	      despesasFixasIndividuais,
+	      despesasAvulsasIndividuais,
+	    ] = await Promise.all([
+	      prisma.receita.aggregate({
+	        where: {
+	          usuarioId: userId,
+	          tipo: 'fixa',
+	          dataRegistro: {
+	            gte: inicioMes,
+	            lt: inicioMesSeguinte,
+	          },
+	        },
+	        _sum: { valor: true },
+	      }),
       prisma.receita.aggregate({
         where: {
           usuarioId: userId,
@@ -215,7 +223,13 @@ export default async function handler(req, res) {
         _sum: { valor: true },
       }),
       prisma.despesa.aggregate({
-        where: { usuarioId: userId, tipo: 'fixa' },
+        where: {
+          usuarioId: userId,
+          tipo: 'fixa',
+          dataInicio: {
+            lt: inicioMesSeguinte,
+          },
+        },
         _sum: { valorParcela: true },
       }),
       prisma.despesa.aggregate({
@@ -229,13 +243,27 @@ export default async function handler(req, res) {
         },
         _sum: { valorParcela: true },
       }),
-      prisma.despesa.findMany({
-        where: { usuarioId: userId, tipo: 'parcelada' },
-      }),
-      prisma.receita.findMany({
-        where: {
-          usuarioId: userId,
-          tipo: 'variavel',
+	      prisma.despesa.findMany({
+	        where: { usuarioId: userId, tipo: 'parcelada' },
+	      }),
+	      prisma.receita.findMany({
+	        where: {
+	          usuarioId: userId,
+	          tipo: 'fixa',
+	          dataRegistro: {
+	            gte: inicioCiclo,
+	            lt: inicioMesSeguinte,
+	          },
+	        },
+	        select: {
+	          valor: true,
+	          dataRegistro: true,
+	        },
+	      }),
+	      prisma.receita.findMany({
+	        where: {
+	          usuarioId: userId,
+	          tipo: 'variavel',
           dataRegistro: {
             gte: inicioCiclo,
             lt: inicioMesSeguinte,
@@ -262,7 +290,13 @@ export default async function handler(req, res) {
       }),
       // Buscar despesas fixas individuais para verificar status de pagamento
       prisma.despesa.findMany({
-        where: { usuarioId: userId, tipo: 'fixa' },
+        where: {
+          usuarioId: userId,
+          tipo: 'fixa',
+          dataInicio: {
+            lt: inicioMesSeguinte,
+          },
+        },
         select: { valorParcela: true, pagamentos: { where: { mes, ano } } },
       }),
       // Buscar despesas avulsas individuais para verificar status de pagamento
@@ -334,21 +368,23 @@ export default async function handler(req, res) {
       { categoria: 'Avulsas', chave: 'avulsas', valor: despesasAvulsasTotal },
       { categoria: 'Parceladas', chave: 'parceladas', valor: despesasParceladas },
     ];
-    const gastosDistribuicao = gastosBase.map((item) => ({
-      ...item,
-      percentual: totalDespesas > 0 ? roundMoney((item.valor / totalDespesas) * 100) : 0,
-    }));
+	    const gastosDistribuicao = gastosBase.map((item) => ({
+	      ...item,
+	      percentual: totalDespesas > 0 ? roundMoney((item.valor / totalDespesas) * 100) : 0,
+	    }));
 
-    const receitasVariaveisPorMes = mapTotalsByMonth(receitasVariaveisCiclo, 'dataRegistro', 'valor');
-    const despesasAvulsasPorMes = mapTotalsByMonth(despesasAvulsasCiclo, 'dataInicio', 'valorParcela');
-    const acumuladoPorCategoria = {};
-    DISTRIBUTION_RULES.forEach((regra) => {
-      acumuladoPorCategoria[normalizeCategoryName(regra.categoria)] = 0;
-    });
+	    const receitasFixasPorMes = mapTotalsByMonth(receitasFixasCiclo, 'dataRegistro', 'valor');
+	    const receitasVariaveisPorMes = mapTotalsByMonth(receitasVariaveisCiclo, 'dataRegistro', 'valor');
+	    const despesasAvulsasPorMes = mapTotalsByMonth(despesasAvulsasCiclo, 'dataInicio', 'valorParcela');
+	    const acumuladoPorCategoria = {};
+	    DISTRIBUTION_RULES.forEach((regra) => {
+	      acumuladoPorCategoria[normalizeCategoryName(regra.categoria)] = 0;
+	    });
 
-    const historicoCiclo = mesesNoCiclo.map(({ mes: mesRef, ano: anoRef, key }) => {
-      const receitasVariaveisMes = toNumber(receitasVariaveisPorMes.get(key));
-      const despesasAvulsasMes = toNumber(despesasAvulsasPorMes.get(key));
+	    const historicoCiclo = mesesNoCiclo.map(({ mes: mesRef, ano: anoRef, key }) => {
+	      const receitasFixasMes = toNumber(receitasFixasPorMes.get(key));
+	      const receitasVariaveisMes = toNumber(receitasVariaveisPorMes.get(key));
+	      const despesasAvulsasMes = toNumber(despesasAvulsasPorMes.get(key));
 
       let despesasParceladasMes = 0;
       parceladas.forEach((despesa) => {
@@ -358,10 +394,10 @@ export default async function handler(req, res) {
         }
       });
 
-      const totalReceitasMes = receitasFixasTotal + receitasVariaveisMes;
-      const totalDespesasMes = despesasFixasTotal + despesasAvulsasMes + despesasParceladasMes;
-      const saldoDistribuivelMes = Math.max(0, totalReceitasMes - totalDespesasMes);
-      const distribuicaoMes = calculateDistribution(saldoDistribuivelMes);
+	      const totalReceitasMes = receitasFixasMes + receitasVariaveisMes;
+	      const totalDespesasMes = despesasFixasTotal + despesasAvulsasMes + despesasParceladasMes;
+	      const saldoDistribuivelMes = Math.max(0, totalReceitasMes - totalDespesasMes);
+	      const distribuicaoMes = calculateDistribution(saldoDistribuivelMes);
 
       distribuicaoMes.forEach((item) => {
         const categoryKey = normalizeCategoryName(item.categoria);
