@@ -63,6 +63,26 @@ export function getDashboard(month: number, year: number): Promise<DashboardResp
   return request<DashboardResponse>(`/dashboard?mes=${month}&ano=${year}`);
 }
 
+export function updateSavedAmount(
+  month: number,
+  year: number,
+  value: number
+): Promise<{ success: boolean; valor_guardado: number }> {
+  return request<{ success: boolean; valor_guardado: number }>(
+    `/caixinhas?mes=${month}&ano=${year}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ valor_guardado: value }),
+    }
+  );
+}
+
+export function resetSavedAmount(month: number, year: number): Promise<{ success: boolean }> {
+  return request<{ success: boolean }>(`/caixinhas?mes=${month}&ano=${year}`, {
+    method: 'DELETE',
+  });
+}
+
 export function getReceitas(month: number, year: number): Promise<ReceitasResponse> {
   return request<ReceitasResponse>(`/receitas?mes=${month}&ano=${year}`);
 }

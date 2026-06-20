@@ -22,7 +22,7 @@ function toPositiveNumber(value) {
 }
 
 function parseISODate(dateValue) {
-  const parsed = new Date(`${dateValue}T00:00:00`);
+  const parsed = new Date(`${dateValue}T00:00:00.000Z`);
   if (Number.isNaN(parsed.getTime())) {
     return null;
   }
@@ -99,8 +99,8 @@ export default async function handler(req, res) {
     const ano = parseInt(req.query.ano, 10) || reference.ano;
 
     try {
-      const inicioMes = new Date(ano, mes - 1, 1);
-      const inicioMesSeguinte = new Date(ano, mes, 1);
+      const inicioMes = new Date(Date.UTC(ano, mes - 1, 1));
+      const inicioMesSeguinte = new Date(Date.UTC(ano, mes, 1));
 
       const fixas = await prisma.receita.findMany({
         where: {

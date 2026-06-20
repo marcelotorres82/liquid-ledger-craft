@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { Check, Pencil, RotateCcw, X } from 'lucide-react';
 import PageContainer from '@/components/PageContainer';
 import GlassCard from '@/components/GlassCard';
 import GlassProgressBar from '@/components/GlassProgressBar';
@@ -19,10 +21,52 @@ const emojiByCategory: Record<string, string> = {
 
 const Savings = ({ onLogout }: SavingsProps) => {
   const dashboard = useFinanceStore((state) => state.dashboard);
+  const setSavedAmount = useFinanceStore((state) => state.setSavedAmount);
+  const useCalculatedSavedAmount = useFinanceStore((state) => state.useCalculatedSavedAmount);
+  const isMutating = useFinanceStore((state) => state.isMutating);
   const totalSaved = Number(dashboard?.caixinhas?.total_acumulado || 0);
   const goals = dashboard?.caixinhas?.categorias || [];
   const distribuicaoSaldo = dashboard?.distribuicao_saldo || [];
   const cycleStart = dashboard?.caixinhas?.inicio_ciclo;
+  const savedThisMonth = Number(dashboard?.caixinhas?.guardado_mes || 0);
+  const calculatedThisMonth = Number(dashboard?.caixinhas?.guardado_mes_calculado || 0);
+  const isManual = Boolean(dashboard?.caixinhas?.guardado_mes_manual);
+  const monthlyAdjustments = Number(dashboard?.caixinhas?.ajustes_mes || 0);
+  const [editingSaved, setEditingSaved] = useState(false);
+  const [savedInput, setSavedInput] = useState(String(savedThisMonth));
+  const [savedError, setSavedError] = useState('');
+
+  useEffect(() => {
+    if (!editingSaved) {
+      setSavedInput(String(savedThisMonth));
+    }
+  }, [savedThisMonth, editingSaved]);
+
+  const saveMonthlyAmount = async () => {
+    const value = Number.parseFloat(savedInput.replace(',', '.'));
+    if (!Number.isFinite(value) || value < 0) {
+      setSavedError('Informe um valor válido.');
+      return;
+    }
+
+    setSavedError('');
+    try {
+      await setSavedAmount(value);
+      setEditingSaved(false);
+    } catch (error) {
+      setSavedError(error instanceof Error ? error.message : 'Não foi possível salvar.');
+    }
+  };
+
+  const restoreCalculatedAmount = async () => {
+    setSavedError('');
+    try {
+      await useCalculatedSavedAmount();
+      setEditingSaved(false);
+    } catch (error) {
+      setSavedError(error instanceof Error ? error.message : 'Não foi possível restaurar.');
+    }
+  };
 
   const periodLabel =
     cycleStart && dashboard?.caixinhas?.meses_considerados
@@ -37,6 +81,93 @@ const Savings = ({ onLogout }: SavingsProps) => {
           <AnimatedNumber value={totalSaved} prefix="R$ " />
         </div>
         <p className="text-caption text-muted-foreground mt-2 opacity-80">{periodLabel}</p>
+      </GlassCard>
+
+      <GlassCard delay={0.12} className="mb-6 oppo-card glass-refractive">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="text-caption text-muted-foreground uppercase tracking-[0.14em]">
+              Guardado neste mês
+            </p>
+            {!editingSaved ? (
+              <>
+                <p className="text-title-2 font-bold text-foreground mt-1">
+                  R$ {savedThisMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-caption text-muted-foreground mt-1">
+                  {isManual
+                    ? `Valor alterado • cálculo original: R$ ${calculatedThisMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    : 'Calculado pelo que restou no mês'}
+                </p>
+                {monthlyAdjustments !== 0 && (
+                  <p className="text-caption text-muted-foreground mt-2">
+                    {monthlyAdjustments < 0 ? 'Retirado das caixinhas' : 'Ajuste nas caixinhas'}:{' '}
+                    R$ {Math.abs(monthlyAdjustments).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                )}
+              </>
+            ) : (
+              <div className="mt-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-subhead font-bold">R$</span>
+                  <input
+                    value={savedInput}
+                    onChange={(event) => setSavedInput(event.target.value)}
+                    inputMode="decimal"
+                    className="min-w-0 flex-1 px-3 py-2 rounded-xl bg-secondary text-foreground outline-none focus:ring-2 focus:ring-primary/30"
+                    aria-label="Valor guardado neste mês"
+                  />
+                  <button
+                    type="button"
+                    onClick={saveMonthlyAmount}
+                    disabled={isMutating}
+                    className="w-9 h-9 shrink-0 rounded-full bg-success/20 text-success flex items-center justify-center disabled:opacity-50"
+                    aria-label="Salvar valor guardado"
+                  >
+                    <Check className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingSaved(false)}
+                    className="w-9 h-9 shrink-0 rounded-full bg-secondary flex items-center justify-center"
+                    aria-label="Cancelar edição"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                {savedError && <p className="text-caption text-destructive mt-2">{savedError}</p>}
+              </div>
+            )}
+          </div>
+
+          {!editingSaved && (
+            <div className="flex gap-2">
+              {isManual && (
+                <button
+                  type="button"
+                  onClick={restoreCalculatedAmount}
+                  disabled={isMutating}
+                  className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center disabled:opacity-50"
+                  aria-label="Usar valor calculado"
+                  title="Usar valor calculado"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setEditingSaved(true)}
+                className="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center"
+                aria-label="Alterar valor guardado"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+        {!editingSaved && savedError && (
+          <p className="text-caption text-destructive mt-2">{savedError}</p>
+        )}
       </GlassCard>
 
       <div className="space-y-3">

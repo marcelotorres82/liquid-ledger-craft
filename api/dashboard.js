@@ -10,11 +10,8 @@ const DISTRIBUTION_RULES = [
   { categoria: 'Férias', percentual: 5 },
 ];
 
-const CAIXINHAS_BALANCE_RESET = {
-  mes: 6,
-  ano: 2026,
-  valor: 2600,
-};
+const CAIXINHA_SAVED_TYPE = 'caixinha_guardado';
+const CAIXINHA_ADJUSTMENT_TYPE = 'caixinha_ajuste';
 
 const CAIXINHA_GOALS = {
   casa: { meta: 45000, plus: 50000 },
@@ -56,13 +53,13 @@ function getMonthYearKey(ano, mes) {
   return `${ano}-${String(mes).padStart(2, '0')}`;
 }
 
-function getMonthIndex(ano, mes) {
-  return ano * 12 + mes;
-}
-
 function getMonthKeyFromDate(dateValue) {
   const date = new Date(dateValue);
-  return getMonthYearKey(date.getFullYear(), date.getMonth() + 1);
+  return getMonthYearKey(date.getUTCFullYear(), date.getUTCMonth() + 1);
+}
+
+function getMonthStart(ano, mes) {
+  return new Date(Date.UTC(ano, mes - 1, 1));
 }
 
 function getValorParcelaMes(despesa, parcelaAtual) {
@@ -79,8 +76,8 @@ function getValorParcelaMes(despesa, parcelaAtual) {
 
 function evaluateInstallmentForMonth(despesa, mes, ano) {
   const dataInicio = new Date(despesa.dataInicio);
-  const mesInicio = dataInicio.getMonth() + 1;
-  const anoInicio = dataInicio.getFullYear();
+  const mesInicio = dataInicio.getUTCMonth() + 1;
+  const anoInicio = dataInicio.getUTCFullYear();
   const parcelasTotal = Number(despesa.parcelasTotal) || 1;
   const mesesDecorridos = (ano - anoInicio) * 12 + (mes - mesInicio);
 
@@ -159,33 +156,12 @@ function calculateDistribution(saldoDistribuivel) {
   });
 }
 
-function applyCaixinhasBalanceReset(acumuladoPorCategoria, historicoCiclo, mes, ano) {
-  const resetIndex = getMonthIndex(CAIXINHAS_BALANCE_RESET.ano, CAIXINHAS_BALANCE_RESET.mes);
-  const referenceIndex = getMonthIndex(ano, mes);
-
-  if (referenceIndex < resetIndex) {
-    return;
-  }
-
-  DISTRIBUTION_RULES.forEach((regra) => {
-    acumuladoPorCategoria[normalizeCategoryName(regra.categoria)] = 0;
-  });
-
-  calculateDistribution(CAIXINHAS_BALANCE_RESET.valor).forEach((item) => {
-    acumuladoPorCategoria[normalizeCategoryName(item.categoria)] = toNumber(item.valor);
-  });
-
-  historicoCiclo.forEach((periodo) => {
-    if (getMonthIndex(periodo.ano, periodo.mes) <= resetIndex) {
-      return;
-    }
-
-    calculateDistribution(periodo.saldo_distribuivel).forEach((item) => {
-      const categoryKey = normalizeCategoryName(item.categoria);
-      acumuladoPorCategoria[categoryKey] =
-        toNumber(acumuladoPorCategoria[categoryKey]) + toNumber(item.valor);
-    });
-  });
+function calculateSignedDistribution(value) {
+  const sign = toNumber(value) < 0 ? -1 : 1;
+  return calculateDistribution(Math.abs(toNumber(value))).map((item) => ({
+    ...item,
+    valor: roundMoney(item.valor * sign),
+  }));
 }
 
 function getReferencePeriod() {
@@ -218,10 +194,10 @@ export default async function handler(req, res) {
   const ano = parseInt(req.query.ano, 10) || reference.ano;
 
   try {
-    const inicioMes = new Date(ano, mes - 1, 1);
-    const inicioMesSeguinte = new Date(ano, mes, 1);
+    const inicioMes = getMonthStart(ano, mes);
+    const inicioMesSeguinte = getMonthStart(ano, mes + 1);
     const ciclo = getCycleStart(mes, ano);
-    const inicioCiclo = new Date(ciclo.ano, ciclo.mes - 1, 1);
+    const inicioCiclo = getMonthStart(ciclo.ano, ciclo.mes);
     const mesesNoCiclo = listMonthsInRange(ciclo.mes, ciclo.ano, mes, ano);
 
 	    const [
@@ -233,6 +209,7 @@ export default async function handler(req, res) {
 	      receitasFixasCiclo,
 	      receitasVariaveisCiclo,
 	      despesasAvulsasCiclo,
+	      caixinhasLancamentosCiclo,
 	      despesasFixasIndividuais,
 	      despesasAvulsasIndividuais,
 	    ] = await Promise.all([
@@ -324,6 +301,25 @@ export default async function handler(req, res) {
           dataInicio: true,
         },
       }),
+      prisma.receita.findMany({
+        where: {
+          usuarioId: userId,
+          tipo: {
+            in: [CAIXINHA_SAVED_TYPE, CAIXINHA_ADJUSTMENT_TYPE],
+          },
+          dataRegistro: {
+            gte: inicioCiclo,
+            lt: inicioMesSeguinte,
+          },
+        },
+        select: {
+          descricao: true,
+          valor: true,
+          tipo: true,
+          dataRegistro: true,
+        },
+        orderBy: { dataRegistro: 'asc' },
+      }),
       // Buscar despesas fixas individuais para verificar status de pagamento
       prisma.despesa.findMany({
         where: {
@@ -333,7 +329,11 @@ export default async function handler(req, res) {
             lt: inicioMesSeguinte,
           },
         },
-        select: { valorParcela: true, pagamentos: { where: { mes, ano } } },
+        select: {
+          valorParcela: true,
+          dataInicio: true,
+          pagamentos: { where: { mes, ano } },
+        },
       }),
       // Buscar despesas avulsas individuais para verificar status de pagamento
       prisma.despesa.findMany({
@@ -412,6 +412,20 @@ export default async function handler(req, res) {
 	    const receitasFixasPorMes = mapTotalsByMonth(receitasFixasCiclo, 'dataRegistro', 'valor');
 	    const receitasVariaveisPorMes = mapTotalsByMonth(receitasVariaveisCiclo, 'dataRegistro', 'valor');
 	    const despesasAvulsasPorMes = mapTotalsByMonth(despesasAvulsasCiclo, 'dataInicio', 'valorParcela');
+	    const guardadoManualPorMes = new Map();
+	    const ajustesCaixinhasPorMes = new Map();
+	    caixinhasLancamentosCiclo.forEach((lancamento) => {
+	      const key = getMonthKeyFromDate(lancamento.dataRegistro);
+	      if (lancamento.tipo === CAIXINHA_SAVED_TYPE) {
+	        guardadoManualPorMes.set(key, toNumber(lancamento.valor));
+	        return;
+	      }
+
+	      ajustesCaixinhasPorMes.set(
+	        key,
+	        toNumber(ajustesCaixinhasPorMes.get(key)) + toNumber(lancamento.valor)
+	      );
+	    });
 	    const acumuladoPorCategoria = {};
 	    DISTRIBUTION_RULES.forEach((regra) => {
 	      acumuladoPorCategoria[normalizeCategoryName(regra.categoria)] = 0;
@@ -421,6 +435,10 @@ export default async function handler(req, res) {
 	      const receitasFixasMes = toNumber(receitasFixasPorMes.get(key));
 	      const receitasVariaveisMes = toNumber(receitasVariaveisPorMes.get(key));
 	      const despesasAvulsasMes = toNumber(despesasAvulsasPorMes.get(key));
+	      const inicioMesSeguinteRef = getMonthStart(anoRef, mesRef + 1);
+	      const despesasFixasMes = despesasFixasIndividuais
+	        .filter((despesa) => new Date(despesa.dataInicio) < inicioMesSeguinteRef)
+	        .reduce((sum, despesa) => sum + toNumber(despesa.valorParcela), 0);
 
       let despesasParceladasMes = 0;
       parceladas.forEach((despesa) => {
@@ -431,9 +449,14 @@ export default async function handler(req, res) {
       });
 
 	      const totalReceitasMes = receitasFixasMes + receitasVariaveisMes;
-	      const totalDespesasMes = despesasFixasTotal + despesasAvulsasMes + despesasParceladasMes;
-	      const saldoDistribuivelMes = Math.max(0, totalReceitasMes - totalDespesasMes);
-	      const distribuicaoMes = calculateDistribution(saldoDistribuivelMes);
+	      const totalDespesasMes = despesasFixasMes + despesasAvulsasMes + despesasParceladasMes;
+	      const guardadoCalculadoMes = Math.max(0, totalReceitasMes - totalDespesasMes);
+	      const guardadoManual = guardadoManualPorMes.has(key);
+	      const guardadoMes = guardadoManual
+	        ? Math.max(0, toNumber(guardadoManualPorMes.get(key)))
+	        : guardadoCalculadoMes;
+	      const ajustesMes = toNumber(ajustesCaixinhasPorMes.get(key));
+	      const distribuicaoMes = calculateSignedDistribution(guardadoMes + ajustesMes);
 
       distribuicaoMes.forEach((item) => {
         const categoryKey = normalizeCategoryName(item.categoria);
@@ -446,11 +469,13 @@ export default async function handler(req, res) {
         ano: anoRef,
         receitas: roundMoney(totalReceitasMes),
         despesas: roundMoney(totalDespesasMes),
-        saldo_distribuivel: roundMoney(saldoDistribuivelMes),
+        saldo_distribuivel: roundMoney(guardadoCalculadoMes),
+        guardado: roundMoney(guardadoMes),
+        guardado_calculado: roundMoney(guardadoCalculadoMes),
+        guardado_manual: guardadoManual,
+        ajustes: roundMoney(ajustesMes),
       };
     });
-
-    applyCaixinhasBalanceReset(acumuladoPorCategoria, historicoCiclo, mes, ano);
 
     const caixinhasCategorias = DISTRIBUTION_RULES.map((regra) => {
       const categoryKey = normalizeCategoryName(regra.categoria);
@@ -503,16 +528,15 @@ export default async function handler(req, res) {
       distribuicao_saldo: distribuicaoSaldo,
       gastos_distribuicao: gastosDistribuicao,
       caixinhas: {
-        ultimo_reset: {
-          mes: CAIXINHAS_BALANCE_RESET.mes,
-          ano: CAIXINHAS_BALANCE_RESET.ano,
-          valor: CAIXINHAS_BALANCE_RESET.valor,
-        },
         inicio_ciclo: {
           mes: ciclo.mes,
           ano: ciclo.ano,
         },
         meses_considerados: mesesNoCiclo.length,
+        guardado_mes: historicoCiclo.at(-1)?.guardado || 0,
+        guardado_mes_calculado: historicoCiclo.at(-1)?.guardado_calculado || 0,
+        guardado_mes_manual: Boolean(historicoCiclo.at(-1)?.guardado_manual),
+        ajustes_mes: historicoCiclo.at(-1)?.ajustes || 0,
         total_acumulado: totalCaixinhas,
         categorias: caixinhasCategorias,
         historico: historicoCiclo,
