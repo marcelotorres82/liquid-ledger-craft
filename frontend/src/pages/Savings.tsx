@@ -11,11 +11,10 @@ interface SavingsProps {
 
 const emojiByCategory: Record<string, string> = {
   Casa: '🏠',
-  Carro: '🚗',
+  Gastos: '💳',
   Reserva: '🛟',
   'Férias': '🏖️',
   Ferias: '🏖️',
-  Lazer: '🎉',
 };
 
 const Savings = ({ onLogout }: SavingsProps) => {

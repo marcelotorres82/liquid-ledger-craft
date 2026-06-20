@@ -44,6 +44,7 @@ Thumbs.db
 
 # Prisma
 lib/prisma/migrations/
+.local/
 
 # Font files (proprietary)
 .font-extract/

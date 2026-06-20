@@ -5,10 +5,9 @@ let currentYear = initialReferenceDate.getFullYear();
 
 const CATEGORY_ICON_MAP = {
     casa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 10.5L12 3l9 7.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 9.8V20h13V9.8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5h4v5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    carro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 14.5l1.5-4.5A2 2 0 0 1 7.4 8.5h9.2a2 2 0 0 1 1.9 1.5L20 14.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 15.5h17v3a1 1 0 0 1-1 1h-1.5a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1v-3Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="14.5" r="1" fill="currentColor"/><circle cx="16.5" cy="14.5" r="1" fill="currentColor"/></svg>',
+    gastos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5" stroke-width="2"/><path d="M3.5 10h17" stroke-width="2"/><path d="M7.5 15h3" stroke-width="2" stroke-linecap="round"/></svg>',
     reserva: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3l7.5 2.9v5.3c0 4.1-2.5 7.8-6.4 9.3L12 21l-1.1-.5C7 19 4.5 15.3 4.5 11.2V5.9L12 3Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 12.2l1.8 1.8 3.3-3.6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     ferias: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20v-8" stroke-width="2" stroke-linecap="round"/><path d="M5 12a7 7 0 0 1 14 0H5Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 20h16" stroke-width="2" stroke-linecap="round"/></svg>',
-    lazer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="7" stroke-width="2"/><path d="M12 8v4l3 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     default: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="8" stroke-width="2"/><path d="M12 8v4l3 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 
@@ -79,10 +78,9 @@ async function loadDashboard() {
 function normalizeCategoryName(categoria) {
     const text = String(categoria || '').toLowerCase();
     if (text.includes('casa')) return 'casa';
-    if (text.includes('carro')) return 'carro';
+    if (text.includes('gastos') || text.includes('gasto')) return 'gastos';
     if (text.includes('reserva') || text.includes('despesa')) return 'reserva';
     if (text.includes('férias') || text.includes('ferias')) return 'ferias';
-    if (text.includes('lazer')) return 'lazer';
     return 'default';
 }
 

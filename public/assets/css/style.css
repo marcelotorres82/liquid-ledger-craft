@@ -84,10 +84,9 @@
   --danger-soft: rgba(255, 59, 48, 0.16);
   --warning: #ff9f0a;
   --icon-casa: #bf5af2;
-  --icon-carro: #0a84ff;
+  --icon-gastos: #0a84ff;
   --icon-reserva: #ff9f0a;
   --icon-ferias: #00c7be;
-  --icon-lazer: #ff2d55;
 
   --surface-divider: rgba(148, 163, 184, 0.25);
   --focus-ring: 0 0 0 4px rgba(10, 132, 255, 0.2);
@@ -120,10 +119,9 @@
   --danger-soft: rgba(255, 105, 97, 0.2);
   --warning: #ffd60a;
   --icon-casa: #d39dff;
-  --icon-carro: #64d2ff;
+  --icon-gastos: #64d2ff;
   --icon-reserva: #ffd166;
   --icon-ferias: #7df9ff;
-  --icon-lazer: #ff7aa2;
 
   --surface-divider: rgba(166, 190, 230, 0.24);
   --focus-ring: 0 0 0 4px rgba(100, 210, 255, 0.25);
@@ -900,8 +898,8 @@ textarea {
   background: linear-gradient(90deg, color-mix(in srgb, var(--icon-casa) 84%, #ffffff), var(--icon-casa));
 }
 
-.caixinha-carro {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--icon-carro) 84%, #ffffff), var(--icon-carro));
+.caixinha-gastos {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--icon-gastos) 84%, #ffffff), var(--icon-gastos));
 }
 
 .caixinha-reserva {
@@ -910,10 +908,6 @@ textarea {
 
 .caixinha-ferias {
   background: linear-gradient(90deg, color-mix(in srgb, var(--icon-ferias) 84%, #ffffff), var(--icon-ferias));
-}
-
-.caixinha-lazer {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--icon-lazer) 84%, #ffffff), var(--icon-lazer));
 }
 
 .chart-legend {
@@ -954,8 +948,8 @@ textarea {
   background: var(--icon-casa);
 }
 
-.chart-dot.categoria-carro {
-  background: var(--icon-carro);
+.chart-dot.categoria-gastos {
+  background: var(--icon-gastos);
 }
 
 .chart-dot.categoria-reserva {
@@ -964,10 +958,6 @@ textarea {
 
 .chart-dot.categoria-ferias {
   background: var(--icon-ferias);
-}
-
-.chart-dot.categoria-lazer {
-  background: var(--icon-lazer);
 }
 
 .chart-label {
@@ -1061,10 +1051,10 @@ textarea {
   border-color: color-mix(in srgb, var(--icon-casa) 34%, transparent);
 }
 
-.categoria-carro .categoria-icon {
-  color: var(--icon-carro);
-  background: color-mix(in srgb, var(--icon-carro) 14%, transparent);
-  border-color: color-mix(in srgb, var(--icon-carro) 34%, transparent);
+.categoria-gastos .categoria-icon {
+  color: var(--icon-gastos);
+  background: color-mix(in srgb, var(--icon-gastos) 14%, transparent);
+  border-color: color-mix(in srgb, var(--icon-gastos) 34%, transparent);
 }
 
 .categoria-reserva .categoria-icon {
@@ -1077,12 +1067,6 @@ textarea {
   color: var(--icon-ferias);
   background: color-mix(in srgb, var(--icon-ferias) 14%, transparent);
   border-color: color-mix(in srgb, var(--icon-ferias) 34%, transparent);
-}
-
-.categoria-lazer .categoria-icon {
-  color: var(--icon-lazer);
-  background: color-mix(in srgb, var(--icon-lazer) 14%, transparent);
-  border-color: color-mix(in srgb, var(--icon-lazer) 34%, transparent);
 }
 
 .parcelamento-icon {
@@ -1156,9 +1140,9 @@ textarea {
   box-shadow: 0 0 16px color-mix(in srgb, var(--icon-casa) 36%, transparent);
 }
 
-.categoria-carro .progress-fill {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--icon-carro) 90%, #ffffff), var(--icon-carro));
-  box-shadow: 0 0 16px color-mix(in srgb, var(--icon-carro) 36%, transparent);
+.categoria-gastos .progress-fill {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--icon-gastos) 90%, #ffffff), var(--icon-gastos));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--icon-gastos) 36%, transparent);
 }
 
 .categoria-reserva .progress-fill {
@@ -1169,11 +1153,6 @@ textarea {
 .categoria-ferias .progress-fill {
   background: linear-gradient(90deg, color-mix(in srgb, var(--icon-ferias) 90%, #ffffff), var(--icon-ferias));
   box-shadow: 0 0 16px color-mix(in srgb, var(--icon-ferias) 36%, transparent);
-}
-
-.categoria-lazer .progress-fill {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--icon-lazer) 90%, #ffffff), var(--icon-lazer));
-  box-shadow: 0 0 16px color-mix(in srgb, var(--icon-lazer) 36%, transparent);
 }
 
 /* Bottom navigation */

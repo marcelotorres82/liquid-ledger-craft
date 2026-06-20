@@ -4,19 +4,23 @@ import { setCorsHeaders } from '../lib/cors.js';
 import { handleApiError } from '../lib/errorHandler.js';
 
 const DISTRIBUTION_RULES = [
-  { categoria: 'Casa', percentual: 50 },
-  { categoria: 'Carro', percentual: 20 },
+  { categoria: 'Casa', percentual: 70 },
+  { categoria: 'Gastos', percentual: 10 },
   { categoria: 'Reserva', percentual: 15 },
-  { categoria: 'Férias', percentual: 10 },
-  { categoria: 'Lazer', percentual: 5 },
+  { categoria: 'Férias', percentual: 5 },
 ];
+
+const CAIXINHAS_BALANCE_RESET = {
+  mes: 6,
+  ano: 2026,
+  valor: 2600,
+};
 
 const CAIXINHA_GOALS = {
   casa: { meta: 45000, plus: 50000 },
-  carro: { meta: 15000, plus: 20000 },
+  gastos: { meta: null, plus: null },
   reserva: { meta: 10000, plus: null },
   ferias: { meta: 8000, plus: 10000 },
-  lazer: { meta: null, plus: null },
 };
 
 function toNumber(value) {
@@ -31,10 +35,9 @@ function roundMoney(value) {
 function normalizeCategoryName(categoria) {
   const text = String(categoria || '').toLowerCase();
   if (text.includes('casa')) return 'casa';
-  if (text.includes('carro')) return 'carro';
+  if (text.includes('gastos') || text.includes('gasto')) return 'gastos';
   if (text.includes('reserva') || text.includes('despesa')) return 'reserva';
   if (text.includes('férias') || text.includes('ferias')) return 'ferias';
-  if (text.includes('lazer')) return 'lazer';
   return 'default';
 }
 
@@ -51,6 +54,10 @@ function resolvePlusTarget(meta, plus) {
 
 function getMonthYearKey(ano, mes) {
   return `${ano}-${String(mes).padStart(2, '0')}`;
+}
+
+function getMonthIndex(ano, mes) {
+  return ano * 12 + mes;
 }
 
 function getMonthKeyFromDate(dateValue) {
@@ -149,6 +156,35 @@ function calculateDistribution(saldoDistribuivel) {
       percentual: regra.percentual,
       valor: valorCentavos / 100,
     };
+  });
+}
+
+function applyCaixinhasBalanceReset(acumuladoPorCategoria, historicoCiclo, mes, ano) {
+  const resetIndex = getMonthIndex(CAIXINHAS_BALANCE_RESET.ano, CAIXINHAS_BALANCE_RESET.mes);
+  const referenceIndex = getMonthIndex(ano, mes);
+
+  if (referenceIndex < resetIndex) {
+    return;
+  }
+
+  DISTRIBUTION_RULES.forEach((regra) => {
+    acumuladoPorCategoria[normalizeCategoryName(regra.categoria)] = 0;
+  });
+
+  calculateDistribution(CAIXINHAS_BALANCE_RESET.valor).forEach((item) => {
+    acumuladoPorCategoria[normalizeCategoryName(item.categoria)] = toNumber(item.valor);
+  });
+
+  historicoCiclo.forEach((periodo) => {
+    if (getMonthIndex(periodo.ano, periodo.mes) <= resetIndex) {
+      return;
+    }
+
+    calculateDistribution(periodo.saldo_distribuivel).forEach((item) => {
+      const categoryKey = normalizeCategoryName(item.categoria);
+      acumuladoPorCategoria[categoryKey] =
+        toNumber(acumuladoPorCategoria[categoryKey]) + toNumber(item.valor);
+    });
   });
 }
 
@@ -414,6 +450,8 @@ export default async function handler(req, res) {
       };
     });
 
+    applyCaixinhasBalanceReset(acumuladoPorCategoria, historicoCiclo, mes, ano);
+
     const caixinhasCategorias = DISTRIBUTION_RULES.map((regra) => {
       const categoryKey = normalizeCategoryName(regra.categoria);
       const goals = CAIXINHA_GOALS[categoryKey] || {};
@@ -465,6 +503,11 @@ export default async function handler(req, res) {
       distribuicao_saldo: distribuicaoSaldo,
       gastos_distribuicao: gastosDistribuicao,
       caixinhas: {
+        ultimo_reset: {
+          mes: CAIXINHAS_BALANCE_RESET.mes,
+          ano: CAIXINHAS_BALANCE_RESET.ano,
+          valor: CAIXINHAS_BALANCE_RESET.valor,
+        },
         inicio_ciclo: {
           mes: ciclo.mes,
           ano: ciclo.ano,
