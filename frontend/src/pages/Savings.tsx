@@ -32,6 +32,7 @@ const Savings = ({ onLogout }: SavingsProps) => {
   const calculatedThisMonth = Number(dashboard?.caixinhas?.guardado_mes_calculado || 0);
   const isManual = Boolean(dashboard?.caixinhas?.guardado_mes_manual);
   const monthlyAdjustments = Number(dashboard?.caixinhas?.ajustes_mes || 0);
+  const wasResetThisMonth = Boolean(dashboard?.caixinhas?.saldo_zerado_mes);
   const [editingSaved, setEditingSaved] = useState(false);
   const [savedInput, setSavedInput] = useState(String(savedThisMonth));
   const [savedError, setSavedError] = useState('');
@@ -103,6 +104,11 @@ const Savings = ({ onLogout }: SavingsProps) => {
                   <p className="text-caption text-muted-foreground mt-2">
                     {monthlyAdjustments < 0 ? 'Retirado das caixinhas' : 'Ajuste nas caixinhas'}:{' '}
                     R$ {Math.abs(monthlyAdjustments).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                )}
+                {wasResetThisMonth && (
+                  <p className="text-caption text-muted-foreground mt-2">
+                    Saldo anterior zerado neste mês
                   </p>
                 )}
               </>

@@ -12,6 +12,7 @@ const DISTRIBUTION_RULES = [
 
 const CAIXINHA_SAVED_TYPE = 'caixinha_guardado';
 const CAIXINHA_ADJUSTMENT_TYPE = 'caixinha_ajuste';
+const CAIXINHA_RESET_TYPE = 'caixinha_reset';
 
 const CAIXINHA_GOALS = {
   casa: { meta: 45000, plus: 50000 },
@@ -305,7 +306,7 @@ export default async function handler(req, res) {
         where: {
           usuarioId: userId,
           tipo: {
-            in: [CAIXINHA_SAVED_TYPE, CAIXINHA_ADJUSTMENT_TYPE],
+            in: [CAIXINHA_SAVED_TYPE, CAIXINHA_ADJUSTMENT_TYPE, CAIXINHA_RESET_TYPE],
           },
           dataRegistro: {
             gte: inicioCiclo,
@@ -414,10 +415,16 @@ export default async function handler(req, res) {
 	    const despesasAvulsasPorMes = mapTotalsByMonth(despesasAvulsasCiclo, 'dataInicio', 'valorParcela');
 	    const guardadoManualPorMes = new Map();
 	    const ajustesCaixinhasPorMes = new Map();
+	    const resetsCaixinhasPorMes = new Set();
 	    caixinhasLancamentosCiclo.forEach((lancamento) => {
 	      const key = getMonthKeyFromDate(lancamento.dataRegistro);
 	      if (lancamento.tipo === CAIXINHA_SAVED_TYPE) {
 	        guardadoManualPorMes.set(key, toNumber(lancamento.valor));
+	        return;
+	      }
+
+	      if (lancamento.tipo === CAIXINHA_RESET_TYPE) {
+	        resetsCaixinhasPorMes.add(key);
 	        return;
 	      }
 
@@ -456,6 +463,14 @@ export default async function handler(req, res) {
 	        ? Math.max(0, toNumber(guardadoManualPorMes.get(key)))
 	        : guardadoCalculadoMes;
 	      const ajustesMes = toNumber(ajustesCaixinhasPorMes.get(key));
+	      const saldoZerado = resetsCaixinhasPorMes.has(key);
+
+	      if (saldoZerado) {
+	        DISTRIBUTION_RULES.forEach((regra) => {
+	          acumuladoPorCategoria[normalizeCategoryName(regra.categoria)] = 0;
+	        });
+	      }
+
 	      const distribuicaoMes = calculateSignedDistribution(guardadoMes + ajustesMes);
 
       distribuicaoMes.forEach((item) => {
@@ -474,6 +489,7 @@ export default async function handler(req, res) {
         guardado_calculado: roundMoney(guardadoCalculadoMes),
         guardado_manual: guardadoManual,
         ajustes: roundMoney(ajustesMes),
+        saldo_zerado: saldoZerado,
       };
     });
 
@@ -537,6 +553,7 @@ export default async function handler(req, res) {
         guardado_mes_calculado: historicoCiclo.at(-1)?.guardado_calculado || 0,
         guardado_mes_manual: Boolean(historicoCiclo.at(-1)?.guardado_manual),
         ajustes_mes: historicoCiclo.at(-1)?.ajustes || 0,
+        saldo_zerado_mes: Boolean(historicoCiclo.at(-1)?.saldo_zerado),
         total_acumulado: totalCaixinhas,
         categorias: caixinhasCategorias,
         historico: historicoCiclo,
