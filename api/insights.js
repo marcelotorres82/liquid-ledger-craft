@@ -217,8 +217,8 @@ function getMonthYearFromDate(dateValue) {
 }
 
 async function loadFinancialSnapshot(userId, mes, ano) {
-  const inicioMes = new Date(ano, mes - 1, 1);
-  const inicioMesSeguinte = new Date(ano, mes, 1);
+  const inicioMes = new Date(Date.UTC(ano, mes - 1, 1));
+  const inicioMesSeguinte = new Date(Date.UTC(ano, mes, 1));
 
   const [receitasFixasResult, receitasVariaveisResult, despesasFixasResult, despesasAvulsasResult] =
     await Promise.all([

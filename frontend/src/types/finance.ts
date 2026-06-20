@@ -92,6 +92,10 @@ export interface CaixinhaHistorico {
   receitas: number;
   despesas: number;
   saldo_distribuivel: number;
+  guardado: number;
+  guardado_calculado: number;
+  guardado_manual: boolean;
+  ajustes: number;
 }
 
 export interface CaixinhasData {
@@ -100,6 +104,10 @@ export interface CaixinhasData {
     ano: number;
   };
   meses_considerados: number;
+  guardado_mes: number;
+  guardado_mes_calculado: number;
+  guardado_mes_manual: boolean;
+  ajustes_mes: number;
   total_acumulado: number;
   categorias: CaixinhaCategoria[];
   historico: CaixinhaHistorico[];

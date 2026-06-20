@@ -9,8 +9,10 @@ import {
   getDespesas,
   getInsights,
   getReceitas,
+  resetSavedAmount,
   updateDespesa,
   updateReceita,
+  updateSavedAmount,
 } from '@/services/api';
 import { getReferencePeriod } from '@/lib/format';
 import type { DashboardResponse, Despesa, Receita, User } from '@/types/finance';
@@ -41,6 +43,8 @@ interface FinanceStore {
   setPeriod: (month: number, year: number) => Promise<void>;
   refreshInsights: () => Promise<void>;
   regenerateInsights: () => Promise<void>;
+  setSavedAmount: (value: number) => Promise<void>;
+  useCalculatedSavedAmount: () => Promise<void>;
   addReceita: (payload: {
     descricao: string;
     valor: number;
@@ -260,6 +264,36 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
       });
     } finally {
       set({ isLoadingInsights: false });
+    }
+  },
+
+  setSavedAmount: async (value) => {
+    const { currentMonth, currentYear } = get();
+    set({ isMutating: true, error: '' });
+
+    try {
+      await updateSavedAmount(currentMonth, currentYear, value);
+      await get().refreshData();
+    } catch (error) {
+      set({ error: extractErrorMessage(error) });
+      throw error;
+    } finally {
+      set({ isMutating: false });
+    }
+  },
+
+  useCalculatedSavedAmount: async () => {
+    const { currentMonth, currentYear } = get();
+    set({ isMutating: true, error: '' });
+
+    try {
+      await resetSavedAmount(currentMonth, currentYear);
+      await get().refreshData();
+    } catch (error) {
+      set({ error: extractErrorMessage(error) });
+      throw error;
+    } finally {
+      set({ isMutating: false });
     }
   },
 

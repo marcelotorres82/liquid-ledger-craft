@@ -27,7 +27,7 @@ function toPositiveNumber(value) {
 }
 
 function parseISODate(dateValue) {
-  const parsed = new Date(`${dateValue}T00:00:00`);
+  const parsed = new Date(`${dateValue}T00:00:00.000Z`);
   if (Number.isNaN(parsed.getTime())) {
     return null;
   }
@@ -192,8 +192,8 @@ export default async function handler(req, res) {
     const ano = parseInt(req.query.ano, 10) || reference.ano;
 
     try {
-      const inicioMes = new Date(ano, mes - 1, 1);
-      const inicioMesSeguinte = new Date(ano, mes, 1);
+      const inicioMes = new Date(Date.UTC(ano, mes - 1, 1));
+      const inicioMesSeguinte = new Date(Date.UTC(ano, mes, 1));
 
       const [fixas, avulsas, parceladas] = await Promise.all([
         prisma.despesa.findMany({
@@ -239,8 +239,8 @@ export default async function handler(req, res) {
             return null;
           }
 
-          const mesInicio = dataInicio.getMonth() + 1;
-          const anoInicio = dataInicio.getFullYear();
+          const mesInicio = dataInicio.getUTCMonth() + 1;
+          const anoInicio = dataInicio.getUTCFullYear();
           const parcelasTotal = Number(d.parcelasTotal) || 1;
 
           const mesesDecorridos = (ano - anoInicio) * 12 + (mes - mesInicio);
