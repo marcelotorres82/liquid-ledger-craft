@@ -87,7 +87,7 @@ Preencha o arquivo `.env` com seus valores:
 |----------|-----------|------------|
 | `DATABASE_URL` | URL de conexão PostgreSQL | Vercel → Storage → Postgres |
 | `POSTGRES_URL` | Mesma URL de conexão | Vercel → Storage → Postgres |
-| `PRISMA_DATABASE_URL` | URL Prisma Accelerate | Vercel → Storage → Postgres (Prisma tab) |
+| `PRISMA_DATABASE_URL` | URL Prisma Accelerate/Prisma Postgres com pool (prioritária em produção) | Vercel → Storage → Postgres (Prisma tab) |
 | `JWT_SECRET` | Hash secreto para tokens | Execute: `openssl rand -hex 32` |
 | `GEMINI_API_KEY` | Chave API do Gemini | [AI Studio](https://aistudio.google.com/app/apikey) |
 | `GEMINI_MODEL` | Modelo Gemini | Ex: `gemini-2.5-flash` |
