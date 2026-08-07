@@ -9,7 +9,6 @@ import {
 
 const TELEGRAM_API_URL = 'https://api.telegram.org';
 const DEFAULT_WEB_APP_URL = 'https://liquid-ledger-craft.vercel.app/app/';
-const TEMPORARY_WEBHOOK_URL = 'https://liquid-ledger-craft.vercel.app/api/telegram';
 const CONFIRM_ACTION = 'finance:confirm';
 const CANCEL_ACTION = 'finance:cancel';
 let defaultPrismaPromise;
@@ -418,32 +417,6 @@ async function handleTelegramRequest(
   const receivedSecret = readHeader(req, 'x-telegram-bot-api-secret-token');
   if (!secretsMatch(receivedSecret, webhookSecret)) {
     return res.status(401).json({ success: false, message: 'Webhook não autorizado' });
-  }
-
-  if (req.body?.action === 'configure_webhook_callbacks_20260807') {
-    try {
-      await callTelegram(
-        botToken,
-        'setWebhook',
-        {
-          url: TEMPORARY_WEBHOOK_URL,
-          secret_token: webhookSecret,
-          allowed_updates: ['message', 'callback_query'],
-        },
-        fetchImpl
-      );
-      return res.status(200).json({
-        success: true,
-        configured: true,
-        allowedUpdates: ['message', 'callback_query'],
-      });
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : 'Falha ao configurar webhook');
-      return res.status(502).json({
-        success: false,
-        message: 'Não foi possível configurar o webhook do Telegram',
-      });
-    }
   }
 
   let update;
