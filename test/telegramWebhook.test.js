@@ -196,6 +196,26 @@ test('rejeita POST sem o segredo correto', async () => {
   assert.equal(res.statusCode, 401);
 });
 
+test('ação temporária protegida habilita mensagens e callbacks', async () => {
+  const { calls, fetchImpl } = createFetchMock();
+  const res = createResponse();
+  await handleTelegramRequest(
+    {
+      method: 'POST',
+      headers: { 'x-telegram-bot-api-secret-token': 'test-secret' },
+      body: { action: 'configure_webhook_callbacks_20260807' },
+    },
+    res,
+    { env: createEnv(), fetchImpl }
+  );
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.configured, true);
+  assert.match(calls[0].url, /\/setWebhook$/);
+  assert.deepEqual(calls[0].body.allowed_updates, ['message', 'callback_query']);
+  assert.equal(calls[0].body.secret_token, 'test-secret');
+});
+
 test('informa o ID sem criar prévia para usuário não autorizado', async () => {
   const { calls, fetchImpl } = createFetchMock();
   const res = await invoke(
