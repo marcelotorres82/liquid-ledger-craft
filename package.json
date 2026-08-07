@@ -13,7 +13,8 @@
     "postinstall": "npm run ui:install && node scripts/generate-prisma.js || true",
     "prisma:studio": "npx prisma studio --schema lib/prisma/schema.prisma",
     "prisma:seed": "node lib/prisma/seed.js",
-    "data:export": "node scripts/export-user-data.js"
+    "data:export": "node scripts/export-user-data.js",
+    "test:telegram": "node --test test/telegramWebhook.test.js"
   },
   "prisma": {
     "schema": "lib/prisma/schema.prisma",
