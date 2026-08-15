@@ -181,6 +181,8 @@ npx prisma db seed
 
 > O seed cria o usuário `marcelo` com a senha definida na variável `DEFAULT_PASSWORD` (ou `changeme` se não definida).
 
+Em produção, quando `DEFAULT_PASSWORD` está configurada na Vercel, cada deployment sincroniza de forma idempotente o hash bcrypt do usuário `marcelo`. O valor nunca é gravado no repositório nem exibido nos logs.
+
 ### 7. Build do frontend
 
 ```bash
