@@ -12,6 +12,12 @@ export interface Receita {
   valor: number;
   tipo: ReceitaTipo;
   data_registro: string;
+  categoria?: string;
+  estabelecimento?: string;
+  conta?: string;
+  origem?: string;
+  confianca_ia?: number | null;
+  notas?: string;
 }
 
 export interface ReceitasResponse {
@@ -39,6 +45,12 @@ export interface Despesa {
   valor_parcela_regular?: number;
   parcela_atual?: number;
   progresso?: number;
+  categoria?: string;
+  estabelecimento?: string;
+  conta?: string;
+  origem?: string;
+  confianca_ia?: number | null;
+  notas?: string;
 }
 
 export interface DespesasResponse {
@@ -159,4 +171,55 @@ export interface InsightResponse {
   source?: string;
   model?: string | null;
   updated_at?: string;
+  summary?: string;
+  insights?: ActionableInsight[];
+}
+
+export interface ActionableInsight {
+  severity: 'info' | 'success' | 'warning' | 'critical';
+  title: string;
+  description: string;
+  evidence: string;
+  impact: number;
+  recommendation: string;
+  actionType: 'none' | 'create_budget' | 'review_expenses' | 'open_savings';
+  actionLabel: string;
+  actionCategory: string;
+  actionAmount: number;
+}
+
+export interface SmartTransaction {
+  kind: 'income' | 'expense';
+  amount: number;
+  description: string;
+  categoryKey: string;
+  categoryLabel: string;
+  recordType: 'fixa' | 'variavel' | 'avulsa' | 'parcelada';
+  date: string;
+  merchant: string;
+  account: string;
+  installments: number;
+  paid: boolean;
+  confidence: number;
+  notes: string;
+  source: string;
+}
+
+export interface CopilotResponse {
+  success: boolean;
+  answer: string;
+  headline: string;
+  severity: 'info' | 'success' | 'warning' | 'critical';
+  evidence: string[];
+  suggestions: string[];
+  source: string;
+  model: string;
+  action: {
+    type: 'none' | 'create_budget' | 'navigate';
+    label: string;
+    category: string;
+    amount: number;
+    path: string;
+    requiresConfirmation: boolean;
+  };
 }

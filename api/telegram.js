@@ -4,8 +4,8 @@ import {
   buildConfirmationText,
   parseAllowedUserIds,
   parseConfirmationText,
-  parseTransactionMessage,
 } from '../lib/telegramFinance.js';
+import { parseTransactionIntelligently } from '../lib/ai/transactionParser.js';
 
 const TELEGRAM_API_URL = 'https://api.telegram.org';
 const DEFAULT_WEB_APP_URL = 'https://liquid-ledger-craft.vercel.app/app/';
@@ -192,7 +192,7 @@ function isAuthorized(from, allowedUserIds) {
   return Number.isSafeInteger(from?.id) && allowedUserIds.has(from.id);
 }
 
-async function handleMessage({ message, botToken, webAppUrl, allowedUserIds, fetchImpl }) {
+async function handleMessage({ message, botToken, webAppUrl, allowedUserIds, fetchImpl, env }) {
   if (!message?.chat?.id || typeof message.text !== 'string') {
     return { handled: false };
   }
@@ -223,15 +223,16 @@ async function handleMessage({ message, botToken, webAppUrl, allowedUserIds, fet
     return { handled: true, authorized: false };
   }
 
-  const transaction = parseTransactionMessage(message.text);
-  if (!transaction || transaction.error) {
+  const parsed = await parseTransactionIntelligently(message.text, { preferred: 'gemini', env });
+  const transaction = parsed.transaction;
+  if (!transaction || parsed.error) {
     await callTelegram(
       botToken,
       'sendMessage',
       {
         chat_id: message.chat.id,
         text:
-          transaction?.error ||
+          parsed.error ||
           'Não entendi o lançamento. Exemplo: "gastei 75 no mercado".',
       },
       fetchImpl
@@ -446,6 +447,7 @@ async function handleTelegramRequest(
           webAppUrl,
           allowedUserIds,
           fetchImpl,
+          env,
         });
 
     return res.status(200).json({ success: true, ...result });

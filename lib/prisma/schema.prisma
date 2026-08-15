@@ -26,6 +26,11 @@ model Usuario {
   receitas  Receita[]
   despesas  Despesa[]
   insights  Insight[]
+  contas    ContaFinanceira[]
+  orcamentos Orcamento[]
+  metas     MetaFinanceira[]
+  execucoesIA ExecucaoIA[]
+  importacoes ImportacaoFinanceira[]
 
   @@map("usuarios")
 }
@@ -35,6 +40,12 @@ model Receita {
   descricao     String   @default("")
   valor         Float
   tipo          String   @default("")
+  categoria     String?  @default("")
+  estabelecimento String? @default("")
+  conta         String?  @default("")
+  origem        String?  @default("manual")
+  confiancaIA   Float?   @map("confianca_ia")
+  notas         String?  @default("")
   dataRegistro  DateTime @default(now()) @map("data_registro")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
@@ -54,6 +65,12 @@ model Despesa {
   valorParcela        Float    @map("valor_parcela")
   valorPrimeiraParcela Float?   @map("valor_primeira_parcela")
   tipo                String   @default("")
+  categoria           String?  @default("")
+  estabelecimento     String?  @default("")
+  conta               String?  @default("")
+  origem              String?  @default("manual")
+  confiancaIA         Float?   @map("confianca_ia")
+  notas               String?  @default("")
   dataInicio          DateTime @default(now()) @map("data_inicio")
   paga                Boolean  @default(false)
   dataPagamento       DateTime? @map("data_pagamento")
@@ -93,6 +110,9 @@ model Insight {
   mes       Int
   ano       Int
   conteudo  String   @default("")
+  dadosEstruturados String? @map("dados_estruturados")
+  provedor  String?  @default("local")
+  modelo    String?  @default("")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -103,5 +123,92 @@ model Insight {
   @@unique([usuarioId, mes, ano])
   @@index([usuarioId, mes, ano])
   @@map("insights")
+}
+
+model ContaFinanceira {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  tipo      String   @default("conta")
+  instituicao String? @default("")
+  cor       String?  @default("")
+  ativa     Boolean  @default(true)
+  saldoInicialCentavos Int @default(0) @map("saldo_inicial_centavos")
+  usuarioId Int      @map("usuario_id")
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([usuarioId, nome])
+  @@map("contas_financeiras")
+}
+
+model Orcamento {
+  id          Int      @id @default(autoincrement())
+  categoria   String
+  limiteCentavos Int   @map("limite_centavos")
+  mes         Int
+  ano         Int
+  ativo       Boolean  @default(true)
+  usuarioId   Int      @map("usuario_id")
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([usuarioId, categoria, mes, ano])
+  @@index([usuarioId, ano, mes])
+  @@map("orcamentos")
+}
+
+model MetaFinanceira {
+  id          Int      @id @default(autoincrement())
+  nome        String
+  valorAlvoCentavos Int @map("valor_alvo_centavos")
+  valorAtualCentavos Int @default(0) @map("valor_atual_centavos")
+  prazo       DateTime?
+  prioridade  Int      @default(2)
+  ativa       Boolean  @default(true)
+  usuarioId   Int      @map("usuario_id")
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([usuarioId, ativa])
+  @@map("metas_financeiras")
+}
+
+model ExecucaoIA {
+  id          Int      @id @default(autoincrement())
+  recurso     String
+  provedor    String
+  modelo      String
+  status      String   @default("success")
+  tokensEntrada Int?   @map("tokens_entrada")
+  tokensSaida Int?     @map("tokens_saida")
+  latenciaMs  Int?     @map("latencia_ms")
+  custoEstimado Float? @map("custo_estimado")
+  metadata    String?  @default("")
+  usuarioId   Int      @map("usuario_id")
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([usuarioId, recurso, createdAt])
+  @@map("execucoes_ia")
+}
+
+model ImportacaoFinanceira {
+  id          Int      @id @default(autoincrement())
+  nomeArquivo String   @map("nome_arquivo")
+  formato     String
+  hash        String
+  totalItens  Int      @default(0) @map("total_itens")
+  itensImportados Int  @default(0) @map("itens_importados")
+  status      String   @default("completed")
+  usuarioId   Int      @map("usuario_id")
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([usuarioId, hash])
+  @@index([usuarioId, createdAt])
+  @@map("importacoes_financeiras")
 }
 

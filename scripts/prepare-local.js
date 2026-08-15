@@ -2,7 +2,11 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '.env' });
+dotenv.config({ path: ['.env.local', '.env'] });
+
+process.env.DATABASE_URL ||= 'file:./.local/finance.db';
+process.env.JWT_SECRET ||= 'liquid-ledger-local-development-only';
+process.env.DEFAULT_PASSWORD ||= 'changeme-local';
 
 if (!process.env.DATABASE_URL?.startsWith('file:')) {
   throw new Error('O modo local requer DATABASE_URL apontando para um arquivo SQLite.');

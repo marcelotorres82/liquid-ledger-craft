@@ -15,7 +15,7 @@ import {
   updateSavedAmount,
 } from '@/services/api';
 import { getReferencePeriod } from '@/lib/format';
-import type { DashboardResponse, Despesa, Receita, User } from '@/types/finance';
+import type { ActionableInsight, DashboardResponse, Despesa, Receita, User } from '@/types/finance';
 
 interface FinanceStore {
   currentMonth: number;
@@ -31,6 +31,8 @@ interface FinanceStore {
   insightHint: string;
   insightSource: string;
   insightModel: string;
+  actionableInsights: ActionableInsight[];
+  insightSummary: string;
   isLoadingData: boolean;
   isLoadingInsights: boolean;
   isMutating: boolean;
@@ -127,6 +129,8 @@ async function loadInsight(month: number, year: number) {
       insightHint: data.warning || data.message || '',
       insightSource: data.source || '',
       insightModel: data.model || '',
+      actionableInsights: data.insights || [],
+      insightSummary: data.summary || '',
     };
   }
 
@@ -135,6 +139,8 @@ async function loadInsight(month: number, year: number) {
     insightHint: data.message || 'Clique em Atualizar para gerar os insights.',
     insightSource: data.source || '',
     insightModel: data.model || '',
+    actionableInsights: data.insights || [],
+    insightSummary: data.summary || '',
   };
 }
 
@@ -167,6 +173,8 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
   insightHint: '',
   insightSource: '',
   insightModel: '',
+  actionableInsights: [],
+  insightSummary: '',
   isLoadingData: false,
   isLoadingInsights: false,
   isMutating: false,
@@ -236,6 +244,8 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
         insightHint: extractErrorMessage(error),
         insightSource: '',
         insightModel: '',
+        actionableInsights: [],
+        insightSummary: '',
       });
     } finally {
       set({ isLoadingInsights: false });
@@ -254,6 +264,8 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
         insightHint: data.warning || data.message || '',
         insightSource: data.source || '',
         insightModel: data.model || '',
+        actionableInsights: data.insights || [],
+        insightSummary: data.summary || '',
       });
     } catch (error) {
       set({
@@ -261,6 +273,8 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
         insightHint: extractErrorMessage(error),
         insightSource: '',
         insightModel: '',
+        actionableInsights: [],
+        insightSummary: '',
       });
     } finally {
       set({ isLoadingInsights: false });

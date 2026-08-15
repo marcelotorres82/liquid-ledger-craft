@@ -57,6 +57,11 @@ function validateReceitaPayload(payload) {
       valor,
       tipo,
       dataRegistro,
+      categoria: String(payload?.categoria || ''),
+      estabelecimento: String(payload?.estabelecimento || ''),
+      conta: String(payload?.conta || ''),
+      origem: String(payload?.origem || 'manual'),
+      notas: String(payload?.notas || ''),
     },
   };
 }
@@ -77,6 +82,12 @@ function mapReceitaToFrontend(receita) {
     valor: Number(receita.valor),
     tipo: receita.tipo,
     data_registro: formatDate(receita.dataRegistro),
+    categoria: receita.categoria || '',
+    estabelecimento: receita.estabelecimento || '',
+    conta: receita.conta || '',
+    origem: receita.origem || 'manual',
+    confianca_ia: receita.confiancaIA ?? null,
+    notas: receita.notas || '',
   };
 }
 

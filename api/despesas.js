@@ -76,6 +76,12 @@ function mapDespesaToFrontend(despesa) {
     paga: isPaga,
     data_pagamento: dtPagamento,
     parcelas_total: Number(despesa.parcelasTotal) || 1,
+    categoria: despesa.categoria || '',
+    estabelecimento: despesa.estabelecimento || '',
+    conta: despesa.conta || '',
+    origem: despesa.origem || 'manual',
+    confianca_ia: despesa.confiancaIA ?? null,
+    notas: despesa.notas || '',
   };
 }
 
@@ -98,6 +104,11 @@ function validateDespesaPayload(payload) {
     paga,
     data_pagamento,
     parcelas_total = 1,
+    categoria,
+    estabelecimento,
+    conta,
+    origem,
+    notas,
     mes_referencia,
     ano_referencia,
   } = payload ?? {};
@@ -165,6 +176,11 @@ function validateDespesaPayload(payload) {
       paga: pagaNormalizada,
       dataPagamento,
       parcelasTotal,
+      categoria: String(categoria || ''),
+      estabelecimento: String(estabelecimento || ''),
+      conta: String(conta || ''),
+      origem: String(origem || 'manual'),
+      notas: String(notas || ''),
     },
     contexto: {
       mes: mes_referencia ? Number(mes_referencia) : null,

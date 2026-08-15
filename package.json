@@ -4,27 +4,31 @@
   "description": "App de controle financeiro com IA",
   "type": "module",
   "scripts": {
-    "start-local": "node scripts/prepare-local.js && npm run ui:build && npx vercel dev --listen 3001",
+    "start-local": "npm run dev:local",
     "dev:vercel": "vercel dev",
+    "dev:local": "node scripts/prepare-local.js && npm run ui:build && node scripts/local-server.mjs",
     "ui:install": "npm install --prefix frontend",
     "ui:build": "npm run build --prefix frontend && node scripts/copy-frontend-build.js",
     "deploy": "vercel --prod",
-    "vercel-build": "npm run ui:install && node scripts/generate-prisma.js && npm run ui:build",
+    "vercel-build": "npm run ui:install && node scripts/generate-prisma.js && npm run db:sync:prod && npm run ui:build",
     "postinstall": "npm run ui:install && node scripts/generate-prisma.js || true",
     "prisma:studio": "npx prisma studio --schema lib/prisma/schema.prisma",
     "prisma:seed": "node lib/prisma/seed.js",
     "data:export": "node scripts/export-user-data.js",
-    "test:telegram": "node --test test/telegramWebhook.test.js"
+    "test": "node --test test/*.test.js",
+    "test:telegram": "node --test test/telegramWebhook.test.js",
+    "db:sync:local": "dotenv -e .env.local -- prisma db push --schema lib/prisma/schema-fixed.prisma",
+    "db:sync:prod": "prisma db push --schema lib/prisma/schema.prisma"
   },
   "prisma": {
     "schema": "lib/prisma/schema.prisma",
     "seed": "node lib/prisma/seed.js"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
+    "@google/genai": "^1.30.0",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
-    "cookie": "^0.6.0",
+    "cookie": "^0.7.2",
     "dotenv": "^17.3.1",
     "framer-motion": "^12.38.0",
     "jsonwebtoken": "^9.0.2",

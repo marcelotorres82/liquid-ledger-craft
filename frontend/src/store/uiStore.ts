@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export type ThemeMode = 'light' | 'dark';
 
 const THEME_KEY = 'app-financeiro-theme';
+const PRIVACY_KEY = 'app-financeiro-privacy';
 
 function applyTheme(theme: ThemeMode) {
   if (typeof document === 'undefined') return;
@@ -29,13 +30,19 @@ interface UIStore {
   initTheme: () => void;
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
+  privacyMode: boolean;
+  togglePrivacy: () => void;
 }
 
 export const useUIStore = create<UIStore>((set, get) => ({
   theme: 'light',
   initialized: false,
+  privacyMode: typeof window !== 'undefined' && window.sessionStorage.getItem(PRIVACY_KEY) === '1',
 
   initTheme: () => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('privacy-mode', get().privacyMode);
+    }
     if (get().initialized) {
       applyTheme(get().theme);
       return;
@@ -58,5 +65,11 @@ export const useUIStore = create<UIStore>((set, get) => ({
   toggleTheme: () => {
     const nextTheme: ThemeMode = get().theme === 'dark' ? 'light' : 'dark';
     get().setTheme(nextTheme);
+  },
+  togglePrivacy: () => {
+    const next = !get().privacyMode;
+    if (typeof window !== 'undefined') window.sessionStorage.setItem(PRIVACY_KEY, next ? '1' : '0');
+    if (typeof document !== 'undefined') document.documentElement.classList.toggle('privacy-mode', next);
+    set({ privacyMode: next });
   },
 }));

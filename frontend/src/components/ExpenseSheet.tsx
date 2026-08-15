@@ -54,6 +54,8 @@ const ExpenseSheet = ({ open, onClose, onSave, initialDate, referenceMonth, edit
   const [descricao, setDescricao] = useState('');
   const [categoria, setCategoria] = useState<string>('contas_fixas');
   const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
   const [valorParcela, setValorParcela] = useState('');
   const [tipo, setTipo] = useState<'fixa' | 'avulsa' | 'parcelada'>('fixa');
   const [dataInicio, setDataInicio] = useState(initialDate);
@@ -75,11 +77,12 @@ const ExpenseSheet = ({ open, onClose, onSave, initialDate, referenceMonth, edit
   }, [customCategories, categoria]);
 
   const handleAddCategory = () => {
-    const label = window.prompt('Nome da nova categoria:');
-    if (label && label.trim()) {
-      setCustomCategories(prev => [...prev, label.trim()]);
-      setCategoria(label.trim());
-    }
+    const label = newCategory.trim().slice(0, 40);
+    if (!label) return;
+    setCustomCategories(prev => [...new Set([...prev, label])]);
+    setCategoria(label);
+    setNewCategory('');
+    setAddingCategory(false);
   };
 
   useEffect(() => {
@@ -380,12 +383,22 @@ const ExpenseSheet = ({ open, onClose, onSave, initialDate, referenceMonth, edit
                     })}
                     <button
                        type="button"
-                       onClick={handleAddCategory}
+                       onClick={() => setAddingCategory(true)}
                        className="whitespace-nowrap px-4 py-2 rounded-2xl text-subhead font-medium bg-secondary text-primary border border-primary/30 tap-highlight-none snap-start flex items-center gap-1"
                     >
                       <Plus className="w-4 h-4" /> Nova
                     </button>
                   </div>
+                  {addingCategory && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <label className="sr-only" htmlFor="new-expense-category">Nome da nova categoria</label>
+                      <input id="new-expense-category" autoFocus value={newCategory} onChange={(event) => setNewCategory(event.target.value)}
+                        onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); handleAddCategory(); } }}
+                        placeholder="Nome da nova categoria" className="flex-1 px-3 py-2 rounded-xl bg-secondary text-subhead outline-none focus:ring-2 focus:ring-primary/30" />
+                      <button type="button" onClick={handleAddCategory} className="px-3 py-2 rounded-xl bg-foreground text-background text-caption font-semibold">Adicionar</button>
+                      <button type="button" onClick={() => setAddingCategory(false)} className="px-2 py-2 text-caption text-muted-foreground">Cancelar</button>
+                    </div>
+                  )}
                 </div>
 
                 <select

@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import FloatingTabBar from '@/components/FloatingTabBar';
 import Dashboard from '@/pages/Dashboard';
-import Income from '@/pages/Income';
-import Expenses from '@/pages/Expenses';
-import Savings from '@/pages/Savings';
-import Analytics from '@/pages/Analytics';
-import NotFound from '@/pages/NotFound';
 import { checkAuth, logoutRequest } from '@/services/api';
 import { useFinanceStore } from '@/store/financeStore';
 import { useUIStore } from '@/store/uiStore';
+
+const Income = lazy(() => import('@/pages/Income'));
+const Expenses = lazy(() => import('@/pages/Expenses'));
+const Savings = lazy(() => import('@/pages/Savings'));
+const Analytics = lazy(() => import('@/pages/Analytics'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 const AUTH_REDIRECT_GUARD = 'app-auth-redirect-attempted';
 
@@ -124,14 +125,22 @@ const App = () => {
       <div className="relative min-h-screen bg-background">
         <div className="relative">
           <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<Dashboard onLogout={handleLogout} />} />
-              <Route path="/income" element={<Income onLogout={handleLogout} />} />
-              <Route path="/expenses" element={<Expenses onLogout={handleLogout} />} />
-              <Route path="/savings" element={<Savings onLogout={handleLogout} />} />
-              <Route path="/analytics" element={<Analytics onLogout={handleLogout} />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center text-subhead text-muted-foreground">
+                  Carregando página...
+                </div>
+              }
+            >
+              <Routes>
+                <Route path="/" element={<Dashboard onLogout={handleLogout} />} />
+                <Route path="/income" element={<Income onLogout={handleLogout} />} />
+                <Route path="/expenses" element={<Expenses onLogout={handleLogout} />} />
+                <Route path="/savings" element={<Savings onLogout={handleLogout} />} />
+                <Route path="/analytics" element={<Analytics onLogout={handleLogout} />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </AnimatePresence>
         </div>
 

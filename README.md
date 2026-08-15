@@ -16,6 +16,65 @@ Aplicação web moderna de controle financeiro pessoal com insights de inteligê
 - **Interface glassmorphism** — design Apple-like com efeitos de vidro, gradientes e micro-animações
 - **PWA** — pode ser instalado como app no celular
 - **Dark mode** — alternância de tema claro/escuro
+- **Copiloto financeiro** — perguntas sobre 12 meses de histórico, evidências e ações que exigem confirmação
+- **Entrada inteligente** — lançamento por texto, voz ou foto de recibo com prévia editável
+- **Importação de extratos** — CSV e OFX, com detecção de arquivo duplicado
+- **Insights acionáveis** — comparação histórica, impacto em reais e criação confirmada de orçamento
+- **Portabilidade** — backup JSON, planilha CSV e calendário ICS de vencimentos
+- **Privacidade rápida** — oculta valores sensíveis durante o uso em público
+- **Pesquisa externa opcional** — Perplexity Search sem enviar o extrato financeiro do usuário
+
+## 🧠 Arquitetura de IA
+
+O app usa uma camada de provedores com fallback. O padrão é `AI_PROVIDER_MODE=gemini-only`, que impede chamadas cobradas à OpenAI ou Perplexity API. O modo `auto` somente deve ser habilitado conscientemente:
+
+1. Gemini é priorizado na interpretação de lançamentos e geração de insights.
+2. Gemini também processa o copiloto e a leitura multimodal de recibos.
+3. Regras locais mantêm lançamento e análises básicas disponíveis quando as APIs falham.
+4. A pesquisa abre o site do Perplexity e usa a sessão/assinatura do usuário, sem consumir a API pelo app.
+
+Todas as respostas destinadas à interface usam JSON Schema estrito. A IA nunca grava uma ação sugerida diretamente: o usuário revisa e confirma antes do endpoint de escrita ser chamado.
+
+> A assinatura do ChatGPT não inclui créditos da OpenAI API. A chave pode estar configurada e ainda exigir faturamento/cota no painel da API; nesse caso o app usa Gemini ou regras locais automaticamente.
+
+Variáveis adicionais:
+
+| Variável | Uso |
+|---|---|
+| `OPENAI_API_KEY` | Copiloto e leitura de recibos |
+| `OPENAI_MODEL` | Modelo OpenAI fixo; padrão `gpt-5.6-luna` |
+| `OPENAI_REASONING_EFFORT` | Esforço do copiloto; padrão `low` |
+| `PERPLEXITY_API_KEY` | Pesquisa externa opcional |
+| `AI_TIMEOUT_MS` | Timeout das chamadas de IA |
+| `AI_MAX_OUTPUT_TOKENS` | Limite de saída por chamada |
+
+## 🔄 Atualização do banco
+
+As mudanças de schema são aditivas e preservam receitas e despesas existentes. Antes do primeiro deploy desta versão, sincronize o banco:
+
+```bash
+npm run db:sync:prod
+```
+
+Para o SQLite local:
+
+```bash
+npm run db:sync:local
+```
+
+Faça um backup antes de qualquer alteração de schema em produção. O build da Vercel gera o Prisma Client e sincroniza este schema aditivo antes de publicar a nova versão; se a conexão falhar, o deployment é interrompido e a versão anterior permanece ativa.
+
+## 🔌 Novos endpoints
+
+| Endpoint | Função |
+|---|---|
+| `POST /api/smart-entry` | Interpretar e confirmar lançamentos inteligentes |
+| `POST /api/copilot` | Perguntas financeiras com histórico do próprio usuário |
+| `GET/POST /api/budgets` | Consultar e criar orçamentos |
+| `POST /api/imports` | Importar lotes CSV/OFX validados |
+| `GET /api/export` | Exportar JSON, CSV ou ICS |
+| `POST /api/research` | Pesquisa externa opcional |
+| `GET /api/ai-status` | Estado seguro dos provedores e execuções recentes, sem expor chaves |
 
 ## 🏗️ Arquitetura
 
@@ -51,11 +110,11 @@ liquid-ledger-craft/
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS, Framer Motion, Zustand |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, Framer Motion, Zustand |
 | Backend | Node.js, Express (serverless functions via Vercel) |
 | Banco de dados | PostgreSQL (Vercel Postgres / Prisma Accelerate) |
 | ORM | Prisma Client |
-| IA | Google Gemini API |
+| IA | OpenAI Responses API, Google Gemini, Perplexity Search e fallback local |
 | Autenticação | JWT + bcryptjs |
 | Deploy | Vercel |
 | Mobile | TWA (Trusted Web Activity) → APK |
@@ -90,7 +149,7 @@ Preencha o arquivo `.env` com seus valores:
 | `PRISMA_DATABASE_URL` | URL Prisma Accelerate/Prisma Postgres com pool (prioritária em produção) | Vercel → Storage → Postgres (Prisma tab) |
 | `JWT_SECRET` | Hash secreto para tokens | Execute: `openssl rand -hex 32` |
 | `GEMINI_API_KEY` | Chave API do Gemini | [AI Studio](https://aistudio.google.com/app/apikey) |
-| `GEMINI_MODEL` | Modelo Gemini | Ex: `gemini-2.5-flash` |
+| `GEMINI_MODEL` | Modelo Gemini | Padrão `gemini-3.6-flash` (Free Tier quando o projeto não tem faturamento) |
 | `DEFAULT_PASSWORD` | Senha do usuário padrão | Use a senha que quiser |
 
 ### 3. Crie o banco de dados na Vercel
@@ -142,10 +201,10 @@ vercel --prod
 ### 9. (Opcional) Rode localmente
 
 ```bash
-vercel dev
+npm run dev:local
 ```
 
-O app será acessível em `http://localhost:3000`.
+O app será acessível em `http://localhost:3001`. Sem um arquivo `.env`, o modo local usa SQLite e a credencial `marcelo` / `changeme-local`; altere `DEFAULT_PASSWORD` para uso contínuo.
 
 ## 📱 Compilar APK Android (TWA)
 

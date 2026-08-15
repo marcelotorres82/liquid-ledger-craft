@@ -4,6 +4,8 @@ import type {
   InsightResponse,
   ReceitasResponse,
   User,
+  SmartTransaction,
+  CopilotResponse,
 } from '@/types/finance';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
@@ -178,4 +180,44 @@ export function generateInsights(month: number, year: number): Promise<InsightRe
     method: 'POST',
     body: JSON.stringify({ mes: month, ano: year }),
   });
+}
+
+export function parseSmartEntry(text: string, imageDataUrl?: string): Promise<{ success: boolean; transaction: SmartTransaction; warning?: string }> {
+  return request('/smart-entry', { method: 'POST', body: JSON.stringify({ action: 'parse', text, imageDataUrl }) });
+}
+
+export function confirmSmartEntry(transaction: SmartTransaction): Promise<{ success: boolean; id: number; kind: string }> {
+  return request('/smart-entry', { method: 'POST', body: JSON.stringify({ action: 'confirm', transaction }) });
+}
+
+export function askCopilot(question: string): Promise<CopilotResponse> {
+  return request<CopilotResponse>('/copilot', { method: 'POST', body: JSON.stringify({ question }) });
+}
+
+export function saveBudget(category: string, amount: number, month: number, year: number): Promise<{ success: boolean }> {
+  return request('/budgets', { method: 'POST', body: JSON.stringify({ category, amount, month, year }) });
+}
+
+export function importTransactions(payload: {
+  filename: string;
+  format: string;
+  transactions: SmartTransaction[];
+}): Promise<{ success: boolean; imported: number; rejected: number }> {
+  return request('/imports', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export interface AiStatusResponse {
+  success: boolean;
+  providers: Record<string, { configured: boolean; enabled?: boolean; purpose: string }>;
+  recentRuns: Array<{
+    feature: string;
+    provider: string;
+    model: string;
+    status: string;
+    createdAt: string;
+  }>;
+}
+
+export function getAiStatus(): Promise<AiStatusResponse> {
+  return request<AiStatusResponse>('/ai-status', {}, { allowFailure: true });
 }

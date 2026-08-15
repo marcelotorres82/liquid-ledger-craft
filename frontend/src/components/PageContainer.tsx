@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, LogOut, MoonStar, SunMedium } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, LogOut, MoonStar, SunMedium } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getMonthName, getShortMonthName } from '@/lib/format';
 import { useFinanceStore } from '@/store/financeStore';
@@ -37,6 +37,8 @@ const PageContainer = ({
   const isLoadingData = useFinanceStore((state) => state.isLoadingData);
   const theme = useUIStore((state) => state.theme);
   const toggleTheme = useUIStore((state) => state.toggleTheme);
+  const privacyMode = useUIStore((state) => state.privacyMode);
+  const togglePrivacy = useUIStore((state) => state.togglePrivacy);
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
   const [pickerYear, setPickerYear] = useState(currentYear);
 
@@ -88,6 +90,14 @@ const PageContainer = ({
           </div>
 
           <div className="flex items-center gap-2 justify-self-end">
+            <button
+              type="button"
+              onClick={togglePrivacy}
+              className="w-11 h-11 rounded-2xl glass-card-static flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors tap-highlight-none"
+              aria-label={privacyMode ? 'Mostrar valores' : 'Ocultar valores'}
+            >
+              {privacyMode ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+            </button>
             <button
               type="button"
               onClick={toggleTheme}

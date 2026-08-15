@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { generateToken, createTokenCookie, clearTokenCookie, verifyToken } from '../lib/auth.js';
 import { setCorsHeaders } from '../lib/cors.js';
 import { handleApiError, AppError } from '../lib/errorHandler.js';
+import { enforceRateLimit } from '../lib/rateLimit.js';
 
 export default async function handler(req, res) {
   console.log('API Request:', req.method, req.url);
@@ -20,47 +21,29 @@ export default async function handler(req, res) {
 
   // LOGIN
   if (action === 'login') {
+    if (!enforceRateLimit(req, res, { scope: 'auth-login', limit: 8, windowMs: 15 * 60 * 1000 })) {
+      return;
+    }
     try {
       const identificador = String(login ?? email ?? '').trim();
       if (!identificador) {
         return res.status(400).json({ success: false, message: 'Login é obrigatório' });
       }
 
-      const normalizedIdentifier = identificador.toLowerCase();
-      let user = await prisma.usuario.findFirst({
+      const user = await prisma.usuario.findFirst({
         where: {
           OR: [{ email: identificador }, { nome: identificador }],
         },
       });
 
-      // SQLite does not support Prisma string `mode: 'insensitive'`.
-      // Fallback to an in-memory case-insensitive match only when exact lookup misses.
       if (!user) {
-        const users = await prisma.usuario.findMany({
-          select: {
-            id: true,
-            nome: true,
-            email: true,
-            senha: true,
-          },
-        });
-
-        user =
-          users.find((candidate) => {
-            const email = String(candidate.email ?? '').toLowerCase();
-            const nome = String(candidate.nome ?? '').toLowerCase();
-            return email === normalizedIdentifier || nome === normalizedIdentifier;
-          }) ?? null;
-      }
-
-      if (!user) {
-        return res.status(401).json({ success: false, message: 'Usuário não encontrado' });
+        return res.status(401).json({ success: false, message: 'Login ou senha inválidos' });
       }
 
       const validPassword = await bcrypt.compare(senha, user.senha);
 
       if (!validPassword) {
-        return res.status(401).json({ success: false, message: 'Senha incorreta' });
+        return res.status(401).json({ success: false, message: 'Login ou senha inválidos' });
       }
 
       const token = generateToken(user.id, user.email);

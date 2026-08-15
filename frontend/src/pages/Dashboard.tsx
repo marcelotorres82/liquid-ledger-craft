@@ -1,17 +1,22 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, Pencil, Sparkles, X } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Pencil, Search, Sparkles, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageContainer from '@/components/PageContainer';
 import GlassCard from '@/components/GlassCard';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import TransactionItem from '@/components/TransactionItem';
 import AiInsightsCard from '@/components/AiInsightsCard';
+import SmartFinanceHub from '@/components/SmartFinanceHub';
+import DataToolsCard from '@/components/DataToolsCard';
 import { parseExpenseDescription } from '@/lib/expenseMeta';
 import { useFinanceStore } from '@/store/financeStore';
 import { formatCurrency, formatDate, getMonthName } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { getExpenseIcon, getIncomeIcon } from '@/lib/transactionIcons';
 import { sparkleTransition } from '@/lib/motion';
+import { useNavigate } from 'react-router-dom';
+import { saveBudget } from '@/services/api';
+import type { ActionableInsight } from '@/types/finance';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -90,6 +95,7 @@ function isMobileContext() {
 }
 
 const Dashboard = ({ onLogout }: DashboardProps) => {
+  const navigate = useNavigate();
   const user = useFinanceStore((state) => state.user);
   const dashboard = useFinanceStore((state) => state.dashboard);
   const receitasFixas = useFinanceStore((state) => state.receitasFixas);
@@ -106,6 +112,8 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
   const insightHint = useFinanceStore((state) => state.insightHint);
   const insightSource = useFinanceStore((state) => state.insightSource);
   const insightModel = useFinanceStore((state) => state.insightModel);
+  const actionableInsights = useFinanceStore((state) => state.actionableInsights);
+  const insightSummary = useFinanceStore((state) => state.insightSummary);
   const error = useFinanceStore((state) => state.error);
 
   const totalIncome = dashboard?.receitas.total || 0;
@@ -278,6 +286,14 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
   const [displayName, setDisplayName] = useState(fallbackName);
   const [editorOpen, setEditorOpen] = useState(false);
   const [nameDraft, setNameDraft] = useState(fallbackName);
+  const [transactionQuery, setTransactionQuery] = useState('');
+  const filteredTransactions = useMemo(() => {
+    const normalizedQuery = transactionQuery.trim().toLocaleLowerCase('pt-BR');
+    if (!normalizedQuery) return recentTransactions;
+    return recentTransactions.filter((entry) =>
+      `${entry.title} ${entry.subtitle}`.toLocaleLowerCase('pt-BR').includes(normalizedQuery)
+    );
+  }, [recentTransactions, transactionQuery]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -328,6 +344,14 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
     setEditorOpen(false);
   };
 
+  const handleInsightAction = async (item: ActionableInsight) => {
+    if (item.actionType === 'create_budget') {
+      await saveBudget(item.actionCategory, item.actionAmount, currentMonth, currentYear);
+      return;
+    }
+    navigate(item.actionType === 'open_savings' ? '/savings' : item.actionType === 'review_expenses' ? '/analytics' : '/');
+  };
+
   const titleNode = useMemo(
     () => (
       <button
@@ -352,13 +376,20 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
   );
 
   return (
-    <PageContainer titleNode={titleNode} subtitle="Resumo financeiro inteligente do mês" onLogout={onLogout}>
+    <PageContainer
+      titleNode={titleNode}
+      subtitle="Resumo financeiro inteligente do mês"
+      onLogout={onLogout}
+      className="lg:max-w-3xl"
+    >
       <GlassCard className="mb-4 overflow-hidden relative glass-neutral" delay={0.1}>
         <p className="text-caption text-muted-foreground uppercase tracking-[0.14em] mb-1">Saldo do mês</p>
         <div className="text-large-title text-foreground leading-tight">
           <AnimatedNumber value={balance} prefix="R$ " />
         </div>
       </GlassCard>
+
+      <SmartFinanceHub />
 
       <div className="grid grid-cols-2 gap-2.5 mb-4">
         <GlassCard delay={0.15} className="glass-neutral">
@@ -513,10 +544,27 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
         source={insightSource}
         model={insightModel}
         onRefresh={regenerateInsights}
+        insights={actionableInsights}
+        summary={insightSummary}
+        onAction={handleInsightAction}
       />
+
+      <DataToolsCard />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ ...sparkleTransition, delay: 0.35 }}>
         <h2 className="text-title-3 text-foreground text-center mb-3">Movimentações recentes</h2>
+
+        <label className="relative block mb-3">
+          <span className="sr-only">Buscar movimentação</span>
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            value={transactionQuery}
+            onChange={(event) => setTransactionQuery(event.target.value)}
+            placeholder="Buscar por descrição ou tipo..."
+            className="w-full rounded-2xl border border-border/60 bg-secondary/45 py-2.5 pl-10 pr-3 text-subhead outline-none transition-colors focus:border-foreground/35"
+          />
+        </label>
 
         <GlassCard delay={0.4} className="divide-y divide-border glass-neutral">
           <div className="max-h-[330px] overflow-y-auto pr-1 scrollbar-hide">
@@ -528,7 +576,11 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
               <p className="text-subhead text-muted-foreground py-3">Sem movimentações no período.</p>
             )}
 
-            {recentTransactions.map((entry, index) => (
+            {!isLoadingData && recentTransactions.length > 0 && filteredTransactions.length === 0 && (
+              <p className="text-subhead text-muted-foreground py-3">Nenhuma movimentação encontrada.</p>
+            )}
+
+            {filteredTransactions.map((entry, index) => (
               <TransactionItem
                 key={entry.id}
                 icon={entry.icon}
