@@ -174,6 +174,7 @@ export default function SmartFinanceHub() {
       {copilot && mode === 'copilot' && (
         <div className="mt-3 rounded-2xl border border-border/70 bg-secondary/45 p-4">
           <p className="text-caption text-primary uppercase tracking-wider">{copilot.source} · {copilot.model}</p><h3 className="text-headline font-semibold mt-1">{copilot.headline}</h3><p className="text-subhead mt-2">{copilot.answer}</p>
+          {copilot.notice && <p className="mt-3 rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-caption text-foreground">{copilot.notice}</p>}
           {copilot.evidence.length > 0 && <ul className="mt-3 space-y-1">{copilot.evidence.map((item) => <li key={item} className="text-caption text-muted-foreground">• {item}</li>)}</ul>}
           {copilot.action.type !== 'none' && !confirmingAction && <button onClick={() => setConfirmingAction(true)} className="mt-3 rounded-xl bg-foreground text-background px-4 py-2 text-caption font-semibold">{copilot.action.label}</button>}
           {confirmingAction && <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-warning/30 p-3"><p className="text-caption">Confirmar esta ação?</p><div className="flex gap-2"><button onClick={() => setConfirmingAction(false)} className="px-3 py-1.5 text-caption">Cancelar</button><button onClick={() => void executeCopilotAction()} className="px-3 py-1.5 rounded-lg bg-foreground text-background text-caption">Confirmar</button></div></div>}

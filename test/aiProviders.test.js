@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildGeminiContents, callOpenAIJson, getAiAvailability } from '../lib/ai/providers.js';
+import { buildGeminiContents, callOpenAIJson, getAiAvailability, getGeminiModelCandidates } from '../lib/ai/providers.js';
 
 test('informa provedores configurados sem expor chaves', () => {
   assert.deepEqual(getAiAvailability({ AI_PROVIDER_MODE: 'auto', OPENAI_API_KEY: 'secret', GEMINI_API_KEY: '', PERPLEXITY_API_KEY: 'x' }), {
@@ -24,6 +24,13 @@ test('prepara recibo multimodal para o Gemini sem alterar a imagem', () => {
   const contents = buildGeminiContents('Leia o recibo', 'Extraia o total', 'data:image/png;base64,YWJj');
   assert.equal(contents[0].parts[1].inlineData.mimeType, 'image/png');
   assert.equal(contents[0].parts[1].inlineData.data, 'YWJj');
+});
+
+test('tenta um modelo Gemini estável quando o modelo configurado falha', () => {
+  assert.deepEqual(getGeminiModelCandidates({ GEMINI_MODEL: 'gemini-3.6-flash' }), [
+    'gemini-3.6-flash',
+    'gemini-2.5-flash',
+  ]);
 });
 
 test('interpreta saída estruturada da Responses API', async () => {

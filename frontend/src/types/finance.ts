@@ -214,6 +214,8 @@ export interface CopilotResponse {
   suggestions: string[];
   source: string;
   model: string;
+  degraded?: boolean;
+  notice?: string | null;
   action: {
     type: 'none' | 'create_budget' | 'navigate';
     label: string;

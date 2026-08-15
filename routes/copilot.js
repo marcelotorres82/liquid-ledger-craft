@@ -3,6 +3,7 @@ import { verifyToken } from '../lib/auth.js';
 import { setCorsHeaders } from '../lib/cors.js';
 import { enforceRateLimit } from '../lib/rateLimit.js';
 import { generateStructured, recordAiRun } from '../lib/ai/providers.js';
+import { buildLocalCopilotAnswer, parseRequestedPeriodMonths } from '../lib/ai/copilotFallback.js';
 import { loadFinancialContext } from '../lib/finance/snapshot.js';
 import { handleApiError } from '../lib/errorHandler.js';
 
@@ -27,16 +28,11 @@ const COPILOT_SCHEMA = {
   required: ['answer', 'headline', 'severity', 'evidence', 'suggestions', 'action'],
 };
 
-function localAnswer(context) {
-  const average = context.monthly.length ? context.totals.expenses / context.monthly.length : 0;
-  const top = context.categories[0];
-  return {
-    headline: 'Resumo do seu fluxo financeiro', severity: context.totals.balance >= 0 ? 'success' : 'warning',
-    answer: `Nos últimos ${context.periodMonths} meses, seu saldo acumulado foi de R$ ${context.totals.balance.toFixed(2)}. A média mensal de despesas foi R$ ${average.toFixed(2)}.`,
-    evidence: top ? [`Maior categoria: ${top.category}, R$ ${top.value.toFixed(2)}`] : ['Ainda há poucos lançamentos para comparar.'],
-    suggestions: ['Mantenha os lançamentos atualizados para melhorar as previsões.'],
-    action: { type: 'none', label: '', category: '', amount: 0, path: '', requiresConfirmation: false },
-  };
+function safeErrorMessage(error) {
+  return String(error instanceof Error ? error.message : 'falha desconhecida')
+    .replace(/AIza[A-Za-z0-9_-]+/g, '[REDACTED]')
+    .replace(/\s+/g, ' ')
+    .slice(0, 800);
 }
 
 export default async function handler(req, res) {
@@ -50,7 +46,8 @@ export default async function handler(req, res) {
   try {
     const question = String(req.body?.question || '').trim().slice(0, 800);
     if (!question) return res.status(400).json({ success: false, message: 'Escreva uma pergunta.' });
-    const context = await loadFinancialContext(prisma, userId, 12);
+    const periodMonths = parseRequestedPeriodMonths(question, 12);
+    const context = await loadFinancialContext(prisma, userId, periodMonths);
     let result;
     try {
       result = await generateStructured({
@@ -60,15 +57,32 @@ export default async function handler(req, res) {
           'Use somente os dados fornecidos. Não dê recomendação de investimento específica.',
           'Mostre cálculos ou evidências concisas. Nunca execute ações: apenas proponha uma ação confirmável.',
           'Se os dados forem insuficientes, diga isso claramente.',
+          'Responda diretamente à pergunta feita; não substitua a resposta por um resumo financeiro genérico.',
+          `O período solicitado e já filtrado é de ${periodMonths} meses. Não use outro período.`,
         ].join(' '),
         input: `Pergunta: ${question}\n\nDados financeiros: ${JSON.stringify(context)}`,
       });
       await recordAiRun(prisma, userId, 'copilot', result, 'success', { questionLength: question.length });
     } catch (error) {
-      result = { data: localAnswer(context), provider: 'local', model: 'local-copilot-v1' };
-      await recordAiRun(prisma, userId, 'copilot', result, 'fallback', { error: error instanceof Error ? error.message : 'unknown' });
+      const reason = safeErrorMessage(error);
+      console.warn('[copilot] Gemini indisponível; usando fallback local:', reason);
+      result = { data: buildLocalCopilotAnswer(question, context), provider: 'local', model: 'local-copilot-v2' };
+      await recordAiRun(prisma, userId, 'copilot', result, 'fallback', {
+        error: reason,
+        questionLength: question.length,
+        periodMonths,
+      });
     }
-    return res.status(200).json({ success: true, ...result.data, source: result.provider, model: result.model });
+    return res.status(200).json({
+      success: true,
+      ...result.data,
+      source: result.provider,
+      model: result.model,
+      degraded: result.provider === 'local',
+      notice: result.provider === 'local'
+        ? 'O Gemini não respondeu nesta tentativa. Usei seus dados com regras locais para responder à pergunta.'
+        : null,
+    });
   } catch (error) {
     return handleApiError(error, res);
   }
