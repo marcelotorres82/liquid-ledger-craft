@@ -1,4 +1,4 @@
-const CACHE_NAME = 'app-financeiro-v14';
+const CACHE_NAME = 'app-financeiro-v15';
 const urlsToCache = [
     './',
     './index.html',
@@ -34,6 +34,22 @@ self.addEventListener('fetch', (event) => {
         event.request.mode === 'navigate' || event.request.destination === 'document';
 
     if (isDocumentRequest) {
+        event.respondWith(
+            fetch(event.request)
+                .then((networkResponse) => {
+                    const copy = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+                    return networkResponse;
+                })
+                .catch(() => caches.match(event.request))
+        );
+        return;
+    }
+
+    const isCriticalAsset =
+        event.request.destination === 'script' || event.request.destination === 'style';
+
+    if (isCriticalAsset) {
         event.respondWith(
             fetch(event.request)
                 .then((networkResponse) => {
