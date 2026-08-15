@@ -6,6 +6,22 @@
   "outputDirectory": "public",
   "rewrites": [
     {
+      "source": "/api/ai-status",
+      "destination": "/api/ai?route=ai-status"
+    },
+    {
+      "source": "/api/copilot",
+      "destination": "/api/ai?route=copilot"
+    },
+    {
+      "source": "/api/research",
+      "destination": "/api/ai?route=research"
+    },
+    {
+      "source": "/api/smart-entry",
+      "destination": "/api/ai?route=smart-entry"
+    },
+    {
       "source": "/app",
       "destination": "/app/index.html"
     },

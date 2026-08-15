@@ -68,7 +68,10 @@ const server = createServer(async (req, nativeRes) => {
       return res.end();
     }
     if (url.pathname.startsWith('/api/')) {
-      const routeName = url.pathname.slice('/api/'.length);
+      const requestedRoute = url.pathname.slice('/api/'.length);
+      const consolidatedRoutes = new Set(['ai-status', 'copilot', 'research', 'smart-entry']);
+      const routeName = consolidatedRoutes.has(requestedRoute) ? 'ai' : requestedRoute;
+      if (consolidatedRoutes.has(requestedRoute)) url.searchParams.set('route', requestedRoute);
       if (!/^[a-z0-9-]+$/i.test(routeName)) return res.status(404).json({ success: false, message: 'Rota não encontrada' });
       const routeFile = resolve(apiRoot, `${routeName}.js`);
       if (!routeFile.startsWith(`${apiRoot}${sep}`) || !existsSync(routeFile)) {

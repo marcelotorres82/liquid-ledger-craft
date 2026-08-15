@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import handler from '../api/research.js';
+import handler from '../routes/research.js';
 import { generateToken } from '../lib/auth.js';
 
 test('pesquisa abre o Perplexity Web sem chamar API externa', async () => {
